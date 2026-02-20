@@ -1,0 +1,4 @@
+
+> @illustrate.md/core@0.0.1 build /Users/nimbus/.tinker/workspaces/illustrate/packages/core
+> tsc --project tsconfig.json
+
