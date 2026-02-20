@@ -4,7 +4,7 @@ illustrate.md
 
 ## Getting Started
 
-This project is managed by [Tinker](https://github.com/mariozechner/tinker), an autonomous task execution system.
+This project is managed by Tinker, an autonomous task execution system.
 
 - **Plan**: Break down features into cards using natural language
 - **Build**: Let Tinker execute tasks automatically with AI assistance  
