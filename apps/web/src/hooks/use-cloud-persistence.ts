@@ -141,7 +141,7 @@ export function useCloudPersistence(
    * Auto-save when document changes
    */
   useEffect(() => {
-    if (!enabled || !document || !documentId || !session?.user?.id || !isOnline) {
+    if (!enabled || !document || !documentId || !hasSession || !session?.user?.id || !isOnline) {
       return;
     }
 
@@ -166,7 +166,7 @@ export function useCloudPersistence(
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [document, documentId, session?.user?.id, enabled, isOnline, autoSaveDelay, saveToCloud]);
+  }, [document, documentId, hasSession, session?.user?.id, enabled, isOnline, autoSaveDelay, saveToCloud]);
 
   /**
    * Save when going offline (attempt to save pending changes)
