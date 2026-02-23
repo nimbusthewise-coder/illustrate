@@ -11,11 +11,15 @@ const GRID_CONSTRAINTS = {
 } as const;
 
 export function GridSettings() {
-  const { data: session } = useSession();
+  // Use status to handle loading and error states
+  const { data: session, status } = useSession();
   const { document, initializeDocument } = useCanvasStore();
   const { createNewDocument, isLoading } = useDocumentStore();
   const width = document?.width ?? 80;
   const height = document?.height ?? 24;
+  
+  // Consider session as unavailable if there's an error
+  const hasSession = status === 'authenticated' && session?.user?.id;
   
   const [widthInput, setWidthInput] = useState(width.toString());
   const [heightInput, setHeightInput] = useState(height.toString());
@@ -59,7 +63,7 @@ export function GridSettings() {
     const newWidth = parseInt(widthInput, 10);
     const newHeight = parseInt(heightInput, 10);
 
-    if (session?.user?.id) {
+    if (hasSession && session?.user?.id) {
       // Create cloud-backed document
       await createNewDocument(session.user.id, title, newWidth, newHeight);
     } else {
@@ -128,12 +132,12 @@ export function GridSettings() {
           disabled={isLoading || !isValid(widthInput) || !isValid(heightInput)}
           className="w-full bg-primary text-primary-foreground px-4 py-2 rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Creating...' : session?.user ? 'Create & Save' : 'Create Local Canvas'}
+          {isLoading ? 'Creating...' : hasSession ? 'Create & Save' : 'Create Local Canvas'}
         </button>
         
-        {!session?.user && (
+        {!hasSession && (
           <p className="text-xs text-muted-foreground mt-2">
-            Sign in to save your work to the cloud
+            {status === 'loading' ? 'Checking authentication...' : 'Sign in to save your work to the cloud'}
           </p>
         )}
       </div>
