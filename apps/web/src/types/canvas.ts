@@ -12,12 +12,16 @@ export interface Buffer {
   flags: Uint8Array;    // Bold, italic, underline, etc.
 }
 
+export type CompositeMode = 'normal' | 'multiply';
+
 export interface Layer {
   id: string;
   name: string;
   parentId: string | null;
   visible: boolean;
   locked: boolean;
+  opacity: number;           // 0-100 percent
+  compositeMode: CompositeMode;
   x: number;            // Offset within root canvas
   y: number;
   buffer: Buffer;
@@ -67,6 +71,8 @@ export function createLayer(name: string, width: number, height: number): Layer 
     parentId: null,
     visible: true,
     locked: false,
+    opacity: 100,
+    compositeMode: 'normal' as CompositeMode,
     x: 0,
     y: 0,
     buffer: createBuffer(width, height),

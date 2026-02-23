@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useCanvasStore } from '@/stores/canvas-store';
-import { Layer } from '@/types/canvas';
+import { Layer, CompositeMode } from '@/types/canvas';
 
 export function LayerPanel() {
   const { 
@@ -15,7 +15,9 @@ export function LayerPanel() {
     toggleLayerVisibility,
     reorderLayer,
     moveLayerUp,
-    moveLayerDown
+    moveLayerDown,
+    setLayerOpacity,
+    setLayerCompositeMode,
   } = useCanvasStore();
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
@@ -244,6 +246,8 @@ export function LayerPanel() {
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {layer.buffer.width} × {layer.buffer.height}
+                      {layer.opacity < 100 && ` • ${layer.opacity}%`}
+                      {layer.compositeMode !== 'normal' && ` • ${layer.compositeMode}`}
                     </div>
                   </div>
                 )}
@@ -303,6 +307,36 @@ export function LayerPanel() {
                   </div>
                 )}
               </div>
+              {/* Opacity and composite mode controls for active layer */}
+              {isActive && !editingLayerId && (
+                <div className="mt-2 pt-2 border-t border-border space-y-2" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-muted-foreground w-16">Opacity</label>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={layer.opacity}
+                      onChange={(e) => setLayerOpacity(layer.id, parseInt(e.target.value, 10))}
+                      className="flex-1 h-1 accent-primary"
+                      data-testid={`opacity-slider-${layer.id}`}
+                    />
+                    <span className="text-xs text-muted-foreground w-8 text-right">{layer.opacity}%</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-muted-foreground w-16">Blend</label>
+                    <select
+                      value={layer.compositeMode}
+                      onChange={(e) => setLayerCompositeMode(layer.id, e.target.value as CompositeMode)}
+                      className="flex-1 text-xs bg-background border border-border rounded px-2 py-1 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      data-testid={`composite-mode-${layer.id}`}
+                    >
+                      <option value="normal">Normal</option>
+                      <option value="multiply">Multiply</option>
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

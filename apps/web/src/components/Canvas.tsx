@@ -80,11 +80,11 @@ export function Canvas() {
         for (let row = minRow; row <= maxRow; row++) {
           let line = '';
           for (let col = minCol; col <= maxCol; col++) {
-            // Composite visible layers
+            // Composite visible layers (respecting opacity)
             let char = ' ';
             for (let i = document.layers.length - 1; i >= 0; i--) {
               const layer = document.layers[i];
-              if (!layer.visible) continue;
+              if (!layer.visible || layer.opacity === 0) continue;
               const index = row * layer.buffer.width + col;
               const charCode = layer.buffer.chars[index];
               if (charCode !== 0) {
@@ -438,30 +438,41 @@ export function Canvas() {
     return isOnBorder;
   };
 
-  // Render cell character from active layer or composite
-  const getCellChar = (col: number, row: number): string => {
-    // Composite visible layers from bottom to top
+  // Render cell from composited layers, respecting opacity and composite mode
+  const getCellData = (col: number, row: number): { char: string; opacity: number } => {
+    // Composite visible layers from bottom (index 0) to top
     for (let i = layers.length - 1; i >= 0; i--) {
       const layer = layers[i];
       if (!layer.visible) continue;
+      if (layer.opacity === 0) continue;
       
       const index = row * layer.buffer.width + col;
       const charCode = layer.buffer.chars[index];
       
       if (charCode !== 0) {
-        return String.fromCharCode(charCode);
+        // For multiply mode with opacity < 100, reduce visual opacity further
+        let effectiveOpacity = (layer.opacity ?? 100) / 100;
+        if (layer.compositeMode === 'multiply') {
+          // In text/ASCII context, multiply darkens — we approximate by reducing opacity
+          effectiveOpacity *= 0.7;
+        }
+        return { char: String.fromCharCode(charCode), opacity: effectiveOpacity };
       }
     }
-    return ' ';
+    return { char: ' ', opacity: 1 };
   };
 
   // Create grid
   const grid = Array.from({ length: height }, (_, row) =>
-    Array.from({ length: width }, (_, col) => ({
-      row,
-      col,
-      char: getCellChar(col, row),
-    }))
+    Array.from({ length: width }, (_, col) => {
+      const cellData = getCellData(col, row);
+      return {
+        row,
+        col,
+        char: cellData.char,
+        opacity: cellData.opacity,
+      };
+    })
   );
 
   // Handle clicking outside the grid to deselect
@@ -542,6 +553,7 @@ export function Canvas() {
                   userSelect: 'none',
                   border: borderStyle,
                   backgroundColor: backgroundColor,
+                  opacity: cell.opacity < 1 ? cell.opacity : undefined,
                   cursor: currentTool === 'eraser' 
                     ? 'crosshair' 
                     : currentTool === 'text' 

@@ -19,9 +19,10 @@ export function compositeBuffers(layers: Layer[], width: number, height: number)
     flags: new Uint8Array(width * height),
   };
 
-  // Composite layers in order
+  // Composite layers in order (respecting opacity)
   for (const layer of layers) {
     if (!layer.visible) continue;
+    if (layer.opacity === 0) continue;
 
     const { buffer, x: offsetX, y: offsetY } = layer;
 
