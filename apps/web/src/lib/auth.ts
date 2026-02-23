@@ -36,30 +36,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Invalid credentials")
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email as string,
-          },
-        })
+        try {
+          const user = await prisma.user.findUnique({
+            where: {
+              email: credentials.email as string,
+            },
+          })
 
-        if (!user || !user.password) {
-          throw new Error("Invalid credentials")
-        }
+          if (!user || !user.password) {
+            throw new Error("Invalid credentials")
+          }
 
-        const isPasswordValid = await compare(
-          credentials.password as string,
-          user.password
-        )
+          const isPasswordValid = await compare(
+            credentials.password as string,
+            user.password
+          )
 
-        if (!isPasswordValid) {
-          throw new Error("Invalid credentials")
-        }
+          if (!isPasswordValid) {
+            throw new Error("Invalid credentials")
+          }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+          }
+        } catch (error) {
+          console.error("Auth error:", error);
+          return null;
         }
       },
     }),
@@ -69,12 +74,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id
         // Fetch full user data including username
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { id: true, email: true, name: true, image: true, username: true },
-        })
-        if (dbUser) {
-          token.username = dbUser.username
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: { id: true, email: true, name: true, image: true, username: true },
+          })
+          if (dbUser) {
+            token.username = dbUser.username
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
         }
       }
       if (account) {
@@ -92,10 +101,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   events: {
     async linkAccount({ user }) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { emailVerified: new Date() },
-      })
+      try {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { emailVerified: new Date() },
+        })
+      } catch (error) {
+        console.error("Error updating user on link account:", error);
+      }
     },
   },
 })
