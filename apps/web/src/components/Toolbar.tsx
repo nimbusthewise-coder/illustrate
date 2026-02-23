@@ -15,6 +15,7 @@ const TOOLS: ToolButton[] = [
   { type: 'box', label: 'Box', shortcut: 'U', icon: '□' },
   { type: 'line', label: 'Line', shortcut: 'L', icon: '/' },
   { type: 'text', label: 'Text', shortcut: 'T', icon: 'T' },
+  { type: 'paint', label: 'Paint', shortcut: 'P', icon: '🎨' },
   { type: 'eraser', label: 'Eraser', shortcut: 'E', icon: '⌫' },
   { type: 'fill', label: 'Fill', shortcut: 'F', icon: '▨' },
 ];

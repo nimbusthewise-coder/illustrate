@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Layer, CanvasDocument, createLayer } from '@/types/canvas';
+import { Layer, CanvasDocument, createLayer, CompositeMode } from '@/types/canvas';
 import { EraserSize } from '@/types/tools';
 import { Component } from '@/types/design-system';
 

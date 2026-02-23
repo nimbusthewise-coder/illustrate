@@ -18,6 +18,7 @@ const TOOL_SHORTCUTS: Record<string, ToolType> = {
   u: 'box',
   l: 'line',
   t: 'text',
+  p: 'paint',
   e: 'eraser',
   f: 'fill',
 };
