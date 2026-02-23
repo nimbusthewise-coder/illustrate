@@ -212,12 +212,15 @@ export async function deleteDocument(params: {
 }
 
 /**
- * Get the embed URL for a document
+ * Get the embed URL for a document.
+ * Returns the persistent /{username}/{id} URL.
+ * For public diagrams, this URL is directly accessible without auth.
+ * For private diagrams, an embed token can be appended as ?token=...
  */
 export async function getEmbedUrl(params: {
   userId: string;
   documentId: string;
-}): Promise<ActionResult<{ url: string }>> {
+}): Promise<ActionResult<{ url: string; apiUrl: string; isPublic: boolean }>> {
   try {
     const { userId, documentId } = params;
 
@@ -240,7 +243,7 @@ export async function getEmbedUrl(params: {
         id: documentId,
         userId,
       },
-      select: { id: true },
+      select: { id: true, isPublic: true },
     });
 
     if (!document) {
@@ -250,13 +253,14 @@ export async function getEmbedUrl(params: {
       };
     }
 
-    // Generate embed URL
+    // Generate embed URLs
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const url = `${baseUrl}/${user.username}/${documentId}`;
+    const apiUrl = `${baseUrl}/api/embed/${documentId}`;
 
     return {
       success: true,
-      data: { url },
+      data: { url, apiUrl, isPublic: document.isPublic },
     };
   } catch (error) {
     console.error('Error generating embed URL:', error);

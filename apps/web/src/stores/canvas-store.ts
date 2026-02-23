@@ -23,6 +23,8 @@ interface CanvasState {
   moveLayerDown: (layerId: string) => void;
   setActiveLayer: (layerId: string) => void;
   toggleLayerVisibility: (layerId: string) => void;
+  setLayerOpacity: (layerId: string, opacity: number) => void;
+  setLayerCompositeMode: (layerId: string, mode: CompositeMode) => void;
   eraseCell: (layerId: string, col: number, row: number) => void;
   eraseCells: (layerId: string, col: number, row: number, size: EraserSize) => void;
   writeChar: (layerId: string, col: number, row: number, char: string, fg?: number, bg?: number) => void;
@@ -182,6 +184,39 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         ...document,
         layers: document.layers.map((layer) =>
           layer.id === layerId ? { ...layer, visible: !layer.visible } : layer
+        ),
+        updatedAt: Date.now(),
+      },
+    });
+  },
+
+  setLayerOpacity: (layerId: string, opacity: number) => {
+    const { document } = get();
+    if (!document) return;
+
+    // Clamp opacity to 0-100 range
+    const clampedOpacity = Math.max(0, Math.min(100, opacity));
+
+    set({
+      document: {
+        ...document,
+        layers: document.layers.map((layer) =>
+          layer.id === layerId ? { ...layer, opacity: clampedOpacity } : layer
+        ),
+        updatedAt: Date.now(),
+      },
+    });
+  },
+
+  setLayerCompositeMode: (layerId: string, mode: CompositeMode) => {
+    const { document } = get();
+    if (!document) return;
+
+    set({
+      document: {
+        ...document,
+        layers: document.layers.map((layer) =>
+          layer.id === layerId ? { ...layer, compositeMode: mode } : layer
         ),
         updatedAt: Date.now(),
       },

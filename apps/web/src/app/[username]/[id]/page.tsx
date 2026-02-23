@@ -8,6 +8,9 @@ interface EmbedPageProps {
     username: string;
     id: string;
   }>;
+  searchParams: Promise<{
+    token?: string;
+  }>;
 }
 
 export async function generateMetadata({
@@ -53,8 +56,9 @@ export async function generateMetadata({
   }
 }
 
-export default async function EmbedPage({ params }: EmbedPageProps) {
+export default async function EmbedPage({ params, searchParams }: EmbedPageProps) {
   const { username, id } = await params;
+  const { token } = await searchParams;
 
   try {
     // Look up user by username
@@ -78,30 +82,49 @@ export default async function EmbedPage({ params }: EmbedPageProps) {
       notFound();
     }
 
-    // Check if document is public
-    // For now, we'll allow viewing if public
-    // TODO: Add authentication check to allow owners to view private diagrams
-    if (!document.isPublic) {
+    // Public diagrams: always accessible without auth
+    if (document.isPublic) {
       return (
-        <div className="flex items-center justify-center min-h-screen bg-background">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground mb-2">
-              Private Diagram
-            </h1>
-            <p className="text-muted-foreground">
-              This diagram is private and cannot be viewed.
-            </p>
-          </div>
-        </div>
+        <EmbedDiagramView
+          document={document}
+          username={username}
+        />
       );
     }
 
-    // Return the embed view
+    // Private diagrams: check for valid embed token
+    if (token) {
+      const embedToken = await prisma.embedToken.findUnique({
+        where: { token },
+      });
+
+      if (
+        embedToken &&
+        embedToken.documentId === id &&
+        !embedToken.revokedAt &&
+        (!embedToken.expiresAt || embedToken.expiresAt > new Date())
+      ) {
+        return (
+          <EmbedDiagramView
+            document={document}
+            username={username}
+          />
+        );
+      }
+    }
+
+    // No valid access — show private message
     return (
-      <EmbedDiagramView
-        document={document}
-        username={username}
-      />
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            Private Diagram
+          </h1>
+          <p className="text-muted-foreground">
+            This diagram is private. A valid embed token is required to view it.
+          </p>
+        </div>
+      </div>
     );
   } catch (error) {
     console.error('Error fetching diagram:', error);
