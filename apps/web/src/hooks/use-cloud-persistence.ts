@@ -34,8 +34,11 @@ export function useCloudPersistence(
   options: CloudPersistenceOptions
 ): CloudPersistenceResult {
   const { documentId, autoSaveDelay = 2000, enabled = true } = options;
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const { document } = useCanvasStore();
+  
+  // Only enable cloud persistence if session is authenticated
+  const hasSession = sessionStatus === 'authenticated' && session?.user?.id;
   
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -76,7 +79,7 @@ export function useCloudPersistence(
    * Save document to cloud
    */
   const saveToCloud = useCallback(async () => {
-    if (!document || !documentId || !session?.user?.id || !isOnline) {
+    if (!document || !documentId || !hasSession || !session?.user?.id || !isOnline) {
       return;
     }
 
