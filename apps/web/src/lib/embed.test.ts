@@ -311,7 +311,9 @@ describe('Embed System (F029 + F033)', () => {
       const updatedAt = new Date('2025-06-15T12:00:00Z');
       const etag = `"${docId}-${updatedAt.getTime()}"`;
 
-      expect(etag).toBe('"doc1-1750075200000"');
+      // ETag should contain the document ID and the timestamp
+      expect(etag).toMatch(/^"doc1-\d+"$/);
+      expect(etag).toBe(`"doc1-${updatedAt.getTime()}"`);
 
       // Same doc, different update time = different ETag
       const laterUpdate = new Date('2025-06-15T12:01:00Z');

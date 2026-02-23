@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { unstable_cache } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,9 +9,11 @@ export const dynamic = 'force-dynamic';
  * Returns diagram data for embedding. No auth required for public diagrams.
  * Private diagrams require a valid embed token passed as ?token= query param.
  * 
- * Supports two ID formats:
- *   - Document ID: /api/embed/{documentId}
- *   - Embed token: /api/embed/{documentId}?token={embedToken}
+ * F033: Living diagram updates on source change
+ * - Always fetches the latest saved version from the database
+ * - Returns ETag and Last-Modified headers for cache validation
+ * - Uses s-maxage=60 with stale-while-revalidate=300 for CDN caching
+ * - On-demand revalidation via revalidateTag in updateDocument
  */
 export async function GET(
   request: NextRequest,
@@ -22,7 +23,7 @@ export async function GET(
     const { id } = await params;
     const token = request.nextUrl.searchParams.get('token');
 
-    // Find the document
+    // Find the document (always fetches latest saved version)
     const document = await prisma.document.findUnique({
       where: { id },
       include: {
@@ -43,10 +44,11 @@ export async function GET(
     }
 
     // F033: Generate ETag from updatedAt for cache validation
+    // When the document is saved, updatedAt changes, producing a new ETag
     const etag = `"${document.id}-${document.updatedAt.getTime()}"`;
     const ifNoneMatch = request.headers.get('if-none-match');
-    
-    // Check if client has current version
+
+    // Check if client already has the current version (304 Not Modified)
     if (ifNoneMatch === etag) {
       return new NextResponse(null, {
         status: 304,

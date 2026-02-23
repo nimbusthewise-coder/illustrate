@@ -234,9 +234,10 @@ describe('F033: Living diagram updates on source change', () => {
     expect(result.success).toBe(true);
     // Tag revalidation should still happen
     expect(revalidateTag).toHaveBeenCalledWith(`embed-${documentId}`);
-    // Path revalidation should NOT happen for embed page (no username)
-    expect(revalidatePath).not.toHaveBeenCalledWith(
-      expect.stringMatching(/^\/[^/]+\/doc456$/)
-    );
+    // Path revalidation should happen for dashboard/documents but NOT for embed page
+    expect(revalidatePath).toHaveBeenCalledWith('/dashboard');
+    expect(revalidatePath).toHaveBeenCalledWith('/documents/doc456');
+    // Should only be called twice (no embed page revalidation since no username)
+    expect(revalidatePath).toHaveBeenCalledTimes(2);
   });
 });

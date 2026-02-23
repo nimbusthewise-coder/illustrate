@@ -149,45 +149,6 @@ export async function updateDocument(params: {
       }
     }
 
-    // Get current document state for versioning
-    const currentDoc = await prisma.document.findUnique({
-      where: { id: documentId },
-      select: {
-        id: true,
-        title: true,
-        width: true,
-        height: true,
-        data: true,
-        tags: true,
-        currentVersion: true,
-      },
-    });
-
-    if (!currentDoc) {
-      return {
-        success: false,
-        error: 'Document not found',
-      };
-    }
-
-    // If data is being updated, create a version snapshot
-    const shouldCreateVersion = updates.data !== undefined;
-    
-    if (shouldCreateVersion) {
-      // Create a version record with the current state before updating
-      await prisma.documentVersion.create({
-        data: {
-          documentId,
-          version: currentDoc.currentVersion,
-          title: currentDoc.title,
-          width: currentDoc.width,
-          height: currentDoc.height,
-          data: JSON.parse(JSON.stringify(currentDoc.data)),
-          tags: currentDoc.tags,
-        },
-      });
-    }
-
     // Update the document
     const updateData: Record<string, unknown> = {};
     if (updates.title !== undefined) updateData.title = updates.title;
@@ -195,11 +156,7 @@ export async function updateDocument(params: {
     if (updates.height !== undefined) updateData.height = updates.height;
     if (updates.isPublic !== undefined) updateData.isPublic = updates.isPublic;
     if (updates.tags !== undefined) updateData.tags = updates.tags;
-    if (updates.data !== undefined) {
-      updateData.data = JSON.parse(JSON.stringify(updates.data));
-      // Increment version when data changes
-      updateData.currentVersion = currentDoc.currentVersion + 1;
-    }
+    if (updates.data !== undefined) updateData.data = JSON.parse(JSON.stringify(updates.data));
 
     await prisma.document.update({
       where: { id: documentId },
