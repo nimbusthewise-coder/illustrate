@@ -13,6 +13,212 @@ export function Canvas() {
   const [boxStart, setBoxStart] = useState<{ col: number; row: number } | null>(null);
   const [selectStart, setSelectStart] = useState<{ col: number; row: number } | null>(null);
 
+  // Add global mouse up listener
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      setIsErasing(false);
+      setLineStart(null); // Cancel line drawing if mouse released outside canvas
+      setBoxStart(null); // Cancel box drawing if mouse released outside canvas
+      setSelectStart(null); // Cancel selection if mouse released outside canvas
+    };
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+  }, []);
+
+  // Handle selection keyboard controls
+  useEffect(() => {
+    if (currentTool !== 'select' || !selection || !activeLayerId || !document) return;
+
+    function handleSelectionKeyboard(event: KeyboardEvent) {
+      if (!selection || !activeLayerId || !document) return;
+
+      const minCol = Math.min(selection.startCol, selection.endCol);
+      const maxCol = Math.max(selection.startCol, selection.endCol);
+      const minRow = Math.min(selection.startRow, selection.endRow);
+      const maxRow = Math.max(selection.startRow, selection.endRow);
+      const selWidth = maxCol - minCol + 1;
+      const selHeight = maxRow - minRow + 1;
+
+      // Escape key - clear selection
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        clearSelection();
+        return;
+      }
+
+      // Delete key - clear selected cells
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        event.preventDefault();
+        const layer = document.layers.find((l) => l.id === activeLayerId);
+        if (!layer || layer.locked) return;
+
+        for (let row = minRow; row <= maxRow; row++) {
+          for (let col = minCol; col <= maxCol; col++) {
+            const index = row * layer.buffer.width + col;
+            layer.buffer.chars[index] = 0;
+            layer.buffer.fg[index] = 0;
+            layer.buffer.bg[index] = 0;
+            layer.buffer.flags[index] = 0;
+          }
+        }
+        // Trigger re-render by updating the document
+        useCanvasStore.setState({
+          document: {
+            ...document,
+            updatedAt: Date.now(),
+          },
+        });
+        return;
+      }
+
+      // Cmd/Ctrl+C - copy selection
+      if ((event.metaKey || event.ctrlKey) && event.key === 'c') {
+        event.preventDefault();
+        
+        // Build text representation of selection
+        const lines: string[] = [];
+        for (let row = minRow; row <= maxRow; row++) {
+          let line = '';
+          for (let col = minCol; col <= maxCol; col++) {
+            // Composite visible layers
+            let char = ' ';
+            for (let i = document.layers.length - 1; i >= 0; i--) {
+              const layer = document.layers[i];
+              if (!layer.visible) continue;
+              const index = row * layer.buffer.width + col;
+              const charCode = layer.buffer.chars[index];
+              if (charCode !== 0) {
+                char = String.fromCharCode(charCode);
+                break;
+              }
+            }
+            line += char;
+          }
+          lines.push(line);
+        }
+        
+        navigator.clipboard.writeText(lines.join('\n')).catch((err) => {
+          console.error('Failed to copy selection:', err);
+        });
+        return;
+      }
+
+      // Arrow keys - move selection
+      if (event.key.startsWith('Arrow')) {
+        event.preventDefault();
+        
+        let deltaCol = 0;
+        let deltaRow = 0;
+        
+        if (event.key === 'ArrowLeft') deltaCol = -1;
+        if (event.key === 'ArrowRight') deltaCol = 1;
+        if (event.key === 'ArrowUp') deltaRow = -1;
+        if (event.key === 'ArrowDown') deltaRow = 1;
+        
+        // Check bounds
+        const newMinCol = minCol + deltaCol;
+        const newMaxCol = maxCol + deltaCol;
+        const newMinRow = minRow + deltaRow;
+        const newMaxRow = maxRow + deltaRow;
+        
+        if (
+          newMinCol >= 0 && newMaxCol < document.width &&
+          newMinRow >= 0 && newMaxRow < document.height
+        ) {
+          setSelection(
+            selection.startCol + deltaCol,
+            selection.startRow + deltaRow,
+            selection.endCol + deltaCol,
+            selection.endRow + deltaRow
+          );
+        }
+        return;
+      }
+    }
+
+    window.addEventListener('keydown', handleSelectionKeyboard);
+    return () => window.removeEventListener('keydown', handleSelectionKeyboard);
+  }, [currentTool, selection, activeLayerId, document, setSelection, clearSelection]);
+
+  // Handle text input when text cursor is active
+  useEffect(() => {
+    if (!textCursor?.visible || !activeLayerId || !document) return;
+
+    function handleTextInput(event: KeyboardEvent) {
+      if (!textCursor?.visible || !activeLayerId || !document) return;
+
+      const { col, row } = textCursor;
+      const { width, height } = document;
+
+      // Arrow key navigation
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        const newCol = Math.max(0, col - 1);
+        setTextCursor({ col: newCol, row, visible: true });
+        return;
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        const newCol = Math.min(width - 1, col + 1);
+        setTextCursor({ col: newCol, row, visible: true });
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        const newRow = Math.max(0, row - 1);
+        setTextCursor({ col, row: newRow, visible: true });
+        return;
+      }
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        const newRow = Math.min(height - 1, row + 1);
+        setTextCursor({ col, row: newRow, visible: true });
+        return;
+      }
+
+      // Backspace
+      if (event.key === 'Backspace') {
+        event.preventDefault();
+        if (col > 0) {
+          const prevCol = col - 1;
+          writeChar(activeLayerId, prevCol, row, ' ');
+          setTextCursor({ col: prevCol, row, visible: true });
+        }
+        return;
+      }
+
+      // Enter/Return - move to next line
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const newRow = Math.min(height - 1, row + 1);
+        setTextCursor({ col: 0, row: newRow, visible: true });
+        return;
+      }
+
+      // Printable characters
+      if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        event.preventDefault();
+        writeChar(activeLayerId, col, row, event.key);
+        
+        // Move cursor to next position
+        const nextCol = col + 1;
+        if (nextCol < width) {
+          setTextCursor({ col: nextCol, row, visible: true });
+        } else {
+          // Wrap to next line if at end of row
+          const nextRow = row + 1;
+          if (nextRow < height) {
+            setTextCursor({ col: 0, row: nextRow, visible: true });
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleTextInput);
+    return () => window.removeEventListener('keydown', handleTextInput);
+  }, [textCursor, activeLayerId, document, writeChar, setTextCursor]);
+
+  // Early return AFTER all hooks have been called
   if (!document) {
     return (
       <div className="bg-card border border-border rounded-lg p-4 text-center text-muted-foreground">
