@@ -32,3 +32,18 @@ Thumbs.db
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+# Worker artifacts (summaries go in documents/)
+*_SUMMARY.md
+*_COMPLETE*.md
+*_IMPLEMENTATION*.md
+*_TASK_*.md
+*_FEATURE_*.md
+*_VERIFICATION*.md
+*_DEMO.md
+TASK_*.md
+IMPLEMENTATION_*.md
+
+# Keep documents folder but ignore contents
+documents/*.md
+!documents/.gitkeep
