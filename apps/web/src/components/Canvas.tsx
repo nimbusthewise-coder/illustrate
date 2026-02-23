@@ -3,11 +3,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { useCanvasStore } from '@/stores/canvas-store';
 import { useToolStore } from '@/stores/tool-store';
+import { useColourStore } from '@/stores/colour-store';
 
 export function Canvas() {
-  const { document, activeLayerId, eraseCells, writeChar, drawLine, drawBox, selection, setSelection, clearSelection } = useCanvasStore();
+  const { document, activeLayerId, eraseCells, writeChar, drawLine, drawBox, selection, setSelection, clearSelection, colourOnlyMode, paintCell } = useCanvasStore();
   const { currentTool, settings, textCursor, setTextCursor, setInputActive } = useToolStore();
+  const { foreground } = useColourStore();
   const [isErasing, setIsErasing] = useState(false);
+  const [isPainting, setIsPainting] = useState(false);
   const [hoveredCell, setHoveredCell] = useState<{ col: number; row: number } | null>(null);
   const [lineStart, setLineStart] = useState<{ col: number; row: number } | null>(null);
   const [boxStart, setBoxStart] = useState<{ col: number; row: number } | null>(null);
@@ -17,6 +20,7 @@ export function Canvas() {
   useEffect(() => {
     const handleGlobalMouseUp = () => {
       setIsErasing(false);
+      setIsPainting(false);
       setLineStart(null); // Cancel line drawing if mouse released outside canvas
       setBoxStart(null); // Cancel box drawing if mouse released outside canvas
       setSelectStart(null); // Cancel selection if mouse released outside canvas
@@ -218,6 +222,11 @@ export function Canvas() {
     return () => window.removeEventListener('keydown', handleTextInput);
   }, [textCursor, activeLayerId, document, writeChar, setTextCursor]);
 
+  // Helper: convert hex colour string to number
+  const hexToNumber = (hex: string): number => {
+    return parseInt(hex.replace('#', ''), 16);
+  };
+
   // Early return AFTER all hooks have been called
   if (!document) {
     return (
@@ -232,7 +241,14 @@ export function Canvas() {
 
   // Handle mouse down
   const handleMouseDown = (col: number, row: number) => {
-    if (currentTool === 'eraser' && activeLayerId) {
+    if (currentTool === 'paint' && activeLayerId) {
+      setIsPainting(true);
+      paintCell(activeLayerId, col, row, hexToNumber(foreground));
+    } else if (colourOnlyMode && currentTool !== 'eraser' && currentTool !== 'select' && activeLayerId) {
+      // In colour-only mode, most tools paint colours
+      setIsPainting(true);
+      paintCell(activeLayerId, col, row, hexToNumber(foreground));
+    } else if (currentTool === 'eraser' && activeLayerId) {
       setIsErasing(true);
       eraseCells(activeLayerId, col, row, settings.eraserSize);
     } else if (currentTool === 'text') {
@@ -267,7 +283,9 @@ export function Canvas() {
   const handleMouseMove = (col: number, row: number) => {
     setHoveredCell({ col, row });
     
-    if (isErasing && currentTool === 'eraser' && activeLayerId) {
+    if (isPainting && activeLayerId) {
+      paintCell(activeLayerId, col, row, hexToNumber(foreground));
+    } else if (isErasing && currentTool === 'eraser' && activeLayerId) {
       eraseCells(activeLayerId, col, row, settings.eraserSize);
     }
   };
@@ -275,6 +293,7 @@ export function Canvas() {
   // Handle mouse up
   const handleMouseUp = (col: number, row: number) => {
     setIsErasing(false);
+    setIsPainting(false);
     
     // Complete line drawing
     if (currentTool === 'line' && lineStart && activeLayerId) {
@@ -298,6 +317,7 @@ export function Canvas() {
   // Handle mouse leave
   const handleMouseLeave = () => {
     setIsErasing(false);
+    setIsPainting(false);
     setHoveredCell(null);
   };
 
@@ -439,7 +459,7 @@ export function Canvas() {
   };
 
   // Render cell from composited layers, respecting opacity and composite mode
-  const getCellData = (col: number, row: number): { char: string; opacity: number } => {
+  const getCellData = (col: number, row: number): { char: string; opacity: number; bgColour: number | null } => {
     // Composite visible layers from bottom (index 0) to top
     for (let i = layers.length - 1; i >= 0; i--) {
       const layer = layers[i];
@@ -448,6 +468,7 @@ export function Canvas() {
       
       const index = row * layer.buffer.width + col;
       const charCode = layer.buffer.chars[index];
+      const bgValue = layer.buffer.bg[index];
       
       if (charCode !== 0) {
         // For multiply mode with opacity < 100, reduce visual opacity further
@@ -456,10 +477,19 @@ export function Canvas() {
           // In text/ASCII context, multiply darkens — we approximate by reducing opacity
           effectiveOpacity *= 0.7;
         }
-        return { char: String.fromCharCode(charCode), opacity: effectiveOpacity };
+        return { 
+          char: String.fromCharCode(charCode), 
+          opacity: effectiveOpacity,
+          bgColour: bgValue !== 0 ? bgValue : null,
+        };
       }
     }
-    return { char: ' ', opacity: 1 };
+    return { char: ' ', opacity: 1, bgColour: null };
+  };
+
+  // Helper: convert number colour to CSS hex string
+  const numberToHex = (num: number): string => {
+    return '#' + num.toString(16).padStart(6, '0');
   };
 
   // Create grid
@@ -471,6 +501,7 @@ export function Canvas() {
         col,
         char: cellData.char,
         opacity: cellData.opacity,
+        bgColour: cellData.bgColour,
       };
     })
   );
@@ -489,6 +520,11 @@ export function Canvas() {
         <p className="text-sm text-muted-foreground">
           Grid: {width} × {height} characters ({width * height} cells)
           {activeLayer && ` • Active: ${activeLayer.name}`}
+          {colourOnlyMode && (
+            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/15 text-primary">
+              Pixel Art Mode
+            </span>
+          )}
         </p>
       </div>
 
@@ -520,7 +556,10 @@ export function Canvas() {
             let backgroundColor = 'transparent';
             let borderStyle = '1px solid rgba(255, 255, 255, 0.05)';
             
-            if (inEraserPreview) {
+            // In colour-only mode, show bg colour as solid block
+            if (colourOnlyMode && cell.bgColour !== null) {
+              backgroundColor = numberToHex(cell.bgColour);
+            } else if (inEraserPreview) {
               backgroundColor = 'rgba(255, 0, 0, 0.3)';
             } else if (inLinePreview) {
               backgroundColor = 'rgba(100, 150, 255, 0.4)';
@@ -556,6 +595,8 @@ export function Canvas() {
                   opacity: cell.opacity < 1 ? cell.opacity : undefined,
                   cursor: currentTool === 'eraser' 
                     ? 'crosshair' 
+                    : currentTool === 'paint'
+                    ? 'crosshair'
                     : currentTool === 'text' 
                     ? 'text' 
                     : currentTool === 'line'
@@ -564,6 +605,8 @@ export function Canvas() {
                     ? 'crosshair'
                     : currentTool === 'select'
                     ? 'crosshair'
+                    : colourOnlyMode
+                    ? 'crosshair'
                     : 'default',
                 }}
                 className="text-terminal-text"
@@ -571,7 +614,7 @@ export function Canvas() {
                 onMouseMove={() => handleMouseMove(cell.col, cell.row)}
                 onMouseUp={() => handleMouseUp(cell.col, cell.row)}
               >
-                {cell.char}
+                {colourOnlyMode ? '' : cell.char}
               </div>
             );
           })}

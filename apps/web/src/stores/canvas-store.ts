@@ -14,6 +14,10 @@ interface CanvasState {
   document: CanvasDocument | null;
   activeLayerId: string | null;
   selection: Selection | null;
+  colourOnlyMode: boolean;
+  toggleColourOnlyMode: () => void;
+  setColourOnlyMode: (enabled: boolean) => void;
+  paintCell: (layerId: string, col: number, row: number, colour: number) => void;
   initializeDocument: (width: number, height: number, title?: string) => void;
   addLayer: () => void;
   renameLayer: (layerId: string, newName: string) => void;
@@ -39,6 +43,41 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   document: null,
   activeLayerId: null,
   selection: null,
+  colourOnlyMode: false,
+
+  toggleColourOnlyMode: () => {
+    set((state) => ({ colourOnlyMode: !state.colourOnlyMode }));
+  },
+
+  setColourOnlyMode: (enabled: boolean) => {
+    set({ colourOnlyMode: enabled });
+  },
+
+  paintCell: (layerId: string, col: number, row: number, colour: number) => {
+    const { document } = get();
+    if (!document) return;
+
+    const layer = document.layers.find((l) => l.id === layerId);
+    if (!layer || layer.locked) return;
+
+    const { buffer } = layer;
+    if (col < 0 || col >= buffer.width || row < 0 || row >= buffer.height) return;
+
+    const index = row * buffer.width + col;
+    // In colour-only mode, we use bg colour and set a block char to indicate filled
+    buffer.bg[index] = colour;
+    // Use a full block character to mark cell as painted
+    if (buffer.chars[index] === 0) {
+      buffer.chars[index] = '█'.charCodeAt(0);
+    }
+
+    set({
+      document: {
+        ...document,
+        updatedAt: Date.now(),
+      },
+    });
+  },
 
   initializeDocument: (width: number, height: number, title = 'Untitled') => {
     // Clamp dimensions to F001 constraints: 1-256

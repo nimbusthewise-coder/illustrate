@@ -1,6 +1,7 @@
 'use client';
 
 import { useToolStore } from '@/stores/tool-store';
+import { useCanvasStore } from '@/stores/canvas-store';
 import { ToolType, EraserSize } from '@/types/tools';
 
 interface ToolButton {
@@ -24,6 +25,7 @@ const ERASER_SIZES: EraserSize[] = [1, 3];
 
 export function Toolbar() {
   const { currentTool, settings, setTool, setEraserSize } = useToolStore();
+  const { colourOnlyMode, toggleColourOnlyMode } = useCanvasStore();
 
   return (
     <div className="bg-card border border-border rounded-lg p-4">
@@ -72,6 +74,30 @@ export function Toolbar() {
           </div>
         </div>
       )}
+
+      {/* Colour-Only Mode Toggle */}
+      <div className="mt-4 pt-4 border-t border-border">
+        <button
+          onClick={toggleColourOnlyMode}
+          className={`w-full flex items-center justify-between px-3 py-2 rounded transition-colors ${
+            colourOnlyMode
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-foreground hover:bg-accent'
+          }`}
+          title="Toggle colour-only pixel art mode"
+        >
+          <span className="flex items-center gap-2">
+            <span className="text-lg w-6 text-center">🎨</span>
+            <span className="text-sm font-medium">Pixel Art</span>
+          </span>
+          <span className="text-xs opacity-70">{colourOnlyMode ? 'ON' : 'OFF'}</span>
+        </button>
+        {colourOnlyMode && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Characters hidden. Click to paint coloured blocks.
+          </p>
+        )}
+      </div>
 
       {/* Keyboard Shortcuts Reference */}
       <div className="mt-4 pt-4 border-t border-border">

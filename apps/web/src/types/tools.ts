@@ -7,6 +7,7 @@ export type ToolType =
   | 'box'       // U - Box drawing tool
   | 'line'      // L - Line tool
   | 'text'      // T - Text tool
+  | 'paint'     // P - Paint (colour) tool
   | 'eraser'    // E - Eraser tool
   | 'fill';     // F - Fill tool
 
