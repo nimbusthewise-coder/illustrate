@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { unstable_cache } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,6 +42,22 @@ export async function GET(
       );
     }
 
+    // F033: Generate ETag from updatedAt for cache validation
+    const etag = `"${document.id}-${document.updatedAt.getTime()}"`;
+    const ifNoneMatch = request.headers.get('if-none-match');
+    
+    // Check if client has current version
+    if (ifNoneMatch === etag) {
+      return new NextResponse(null, {
+        status: 304,
+        headers: {
+          'ETag': etag,
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
+
     // If public, return data directly
     if (document.isPublic) {
       return NextResponse.json(
@@ -60,6 +77,8 @@ export async function GET(
           headers: {
             'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
             'Access-Control-Allow-Origin': '*',
+            'ETag': etag,
+            'Last-Modified': document.updatedAt.toUTCString(),
           },
         }
       );
@@ -127,6 +146,8 @@ export async function GET(
         headers: {
           'Cache-Control': 'private, s-maxage=60, stale-while-revalidate=300',
           'Access-Control-Allow-Origin': '*',
+          'ETag': etag,
+          'Last-Modified': document.updatedAt.toUTCString(),
         },
       }
     );

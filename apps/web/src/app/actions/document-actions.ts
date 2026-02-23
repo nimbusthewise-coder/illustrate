@@ -10,7 +10,7 @@ import {
   enforceCanvasSize,
   enforceDocumentOperation,
 } from '@/lib/tier-enforcement';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 export type ActionResult<T = void> = {
   success: boolean;
@@ -149,6 +149,45 @@ export async function updateDocument(params: {
       }
     }
 
+    // Get current document state for versioning
+    const currentDoc = await prisma.document.findUnique({
+      where: { id: documentId },
+      select: {
+        id: true,
+        title: true,
+        width: true,
+        height: true,
+        data: true,
+        tags: true,
+        currentVersion: true,
+      },
+    });
+
+    if (!currentDoc) {
+      return {
+        success: false,
+        error: 'Document not found',
+      };
+    }
+
+    // If data is being updated, create a version snapshot
+    const shouldCreateVersion = updates.data !== undefined;
+    
+    if (shouldCreateVersion) {
+      // Create a version record with the current state before updating
+      await prisma.documentVersion.create({
+        data: {
+          documentId,
+          version: currentDoc.currentVersion,
+          title: currentDoc.title,
+          width: currentDoc.width,
+          height: currentDoc.height,
+          data: JSON.parse(JSON.stringify(currentDoc.data)),
+          tags: currentDoc.tags,
+        },
+      });
+    }
+
     // Update the document
     const updateData: Record<string, unknown> = {};
     if (updates.title !== undefined) updateData.title = updates.title;
@@ -156,7 +195,11 @@ export async function updateDocument(params: {
     if (updates.height !== undefined) updateData.height = updates.height;
     if (updates.isPublic !== undefined) updateData.isPublic = updates.isPublic;
     if (updates.tags !== undefined) updateData.tags = updates.tags;
-    if (updates.data !== undefined) updateData.data = JSON.parse(JSON.stringify(updates.data));
+    if (updates.data !== undefined) {
+      updateData.data = JSON.parse(JSON.stringify(updates.data));
+      // Increment version when data changes
+      updateData.currentVersion = currentDoc.currentVersion + 1;
+    }
 
     await prisma.document.update({
       where: { id: documentId },
@@ -165,6 +208,18 @@ export async function updateDocument(params: {
 
     revalidatePath('/dashboard');
     revalidatePath(`/documents/${documentId}`);
+
+    // F033: Invalidate embed caches so living diagrams reflect latest saved version
+    // Revalidate the embed API route
+    revalidateTag(`embed-${documentId}`);
+    // Revalidate the public embed page (look up username for path-based revalidation)
+    const owner = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { username: true },
+    });
+    if (owner?.username) {
+      revalidatePath(`/${owner.username}/${documentId}`);
+    }
 
     return { success: true };
   } catch (error) {
