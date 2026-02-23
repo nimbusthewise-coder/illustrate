@@ -124,7 +124,7 @@ export function useCloudPersistence(
     } finally {
       isSavingRef.current = false;
     }
-  }, [document, documentId, session?.user?.id, isOnline]);
+  }, [document, documentId, hasSession, session?.user?.id, isOnline]);
 
   /**
    * Manual save trigger
