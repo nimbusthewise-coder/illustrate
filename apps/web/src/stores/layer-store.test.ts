@@ -116,4 +116,82 @@ describe('Layer Store — F014', () => {
       expect(useLayerStore.getState().getLayer('nope')).toBeUndefined();
     });
   });
+
+  describe('toggleLayerLock — F016', () => {
+    it('toggles layer lock state', () => {
+      const { layers } = useLayerStore.getState();
+      const layerId = layers[0].id;
+      
+      // Default is unlocked
+      expect(layers[0].locked).toBe(false);
+      
+      // Toggle to locked
+      useLayerStore.getState().toggleLayerLock(layerId);
+      expect(useLayerStore.getState().layers[0].locked).toBe(true);
+      
+      // Toggle back to unlocked
+      useLayerStore.getState().toggleLayerLock(layerId);
+      expect(useLayerStore.getState().layers[0].locked).toBe(false);
+    });
+
+    it('isLayerLocked returns correct status', () => {
+      const { layers } = useLayerStore.getState();
+      const layerId = layers[0].id;
+      
+      expect(useLayerStore.getState().isLayerLocked(layerId)).toBe(false);
+      
+      useLayerStore.getState().toggleLayerLock(layerId);
+      expect(useLayerStore.getState().isLayerLocked(layerId)).toBe(true);
+    });
+
+    it('isLayerLocked returns false for non-existent layer', () => {
+      expect(useLayerStore.getState().isLayerLocked('invalid')).toBe(false);
+    });
+  });
+
+  describe('buffer operations with locked layers — F016', () => {
+    it('prevents setCell on locked layer', () => {
+      const { layers } = useLayerStore.getState();
+      const layerId = layers[0].id;
+      
+      // Set a cell on unlocked layer
+      useLayerStore.getState().setCell(layerId, 0, 0, 'X');
+      expect(useLayerStore.getState().getCell(layerId, 0, 0)).toBe('X');
+      
+      // Lock the layer
+      useLayerStore.getState().toggleLayerLock(layerId);
+      
+      // Try to set a cell on locked layer
+      useLayerStore.getState().setCell(layerId, 0, 0, 'Y');
+      
+      // Cell should still be 'X'
+      expect(useLayerStore.getState().getCell(layerId, 0, 0)).toBe('X');
+    });
+
+    it('prevents setCells on locked layer', () => {
+      const { layers } = useLayerStore.getState();
+      const layerId = layers[0].id;
+      
+      // Set cells on unlocked layer
+      useLayerStore.getState().setCells(layerId, [
+        { row: 0, col: 0, char: 'A' },
+        { row: 0, col: 1, char: 'B' },
+      ]);
+      expect(useLayerStore.getState().getCell(layerId, 0, 0)).toBe('A');
+      expect(useLayerStore.getState().getCell(layerId, 0, 1)).toBe('B');
+      
+      // Lock the layer
+      useLayerStore.getState().toggleLayerLock(layerId);
+      
+      // Try to set cells on locked layer
+      useLayerStore.getState().setCells(layerId, [
+        { row: 0, col: 0, char: 'X' },
+        { row: 0, col: 1, char: 'Y' },
+      ]);
+      
+      // Cells should still be 'A' and 'B'
+      expect(useLayerStore.getState().getCell(layerId, 0, 0)).toBe('A');
+      expect(useLayerStore.getState().getCell(layerId, 0, 1)).toBe('B');
+    });
+  });
 });

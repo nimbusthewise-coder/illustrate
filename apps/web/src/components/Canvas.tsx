@@ -7,10 +7,15 @@ import { useComponentInstanceStore } from '@/stores/component-instance-store';
 import { useColorStore } from '@/stores/color-store';
 import { useComponents } from '@/hooks/useComponents';
 import { useShortcuts, useShortcutScope } from '@/hooks/useShortcuts';
+import { useToolSelection } from '@/hooks/useToolSelection';
+import { useZoom } from '@/hooks/useZoom';
+import { ZoomControls } from '@/components/ZoomControls';
+import { TOOLS } from '@/types/tools';
 import { renderComponentToGrid } from '@/utils/componentRenderer';
 
 /**
  * Canvas — renders a character grid at the configured dimensions.
+ * F010: Integrated with tool selection system for different interaction modes.
  * F021: Supports dropping components from the library to place instances.
  * F052: Integrated with keyboard shortcuts system.
  * F064: Integrates with color picker for foreground/background colors.
@@ -22,6 +27,7 @@ export function Canvas() {
   const width = useCanvasStore((s) => s.width);
   const height = useCanvasStore((s) => s.height);
   const activeLayerId = useLayerStore((s) => s.activeLayerId);
+  const toggleLayerLock = useLayerStore((s) => s.toggleLayerLock);
   const instances = useComponentInstanceStore((s) => s.instances);
   const placeComponent = useComponentInstanceStore((s) => s.placeComponent);
   const selectInstance = useComponentInstanceStore((s) => s.selectInstance);
@@ -33,6 +39,13 @@ export function Canvas() {
   const gridRef = useRef<HTMLDivElement>(null);
   
   const [dragOver, setDragOver] = useState(false);
+  
+  // F010: Get current tool and apply tool-specific cursor
+  const { effectiveTool } = useToolSelection();
+  const currentTool = TOOLS[effectiveTool];
+
+  // F003: Zoom functionality
+  const { zoom, zoomPercent, zoomIn, zoomOut, resetZoom, containerRef } = useZoom();
 
   // Set canvas scope as active for keyboard shortcuts (F052)
   useShortcutScope('canvas');
@@ -64,6 +77,79 @@ export function Canvas() {
       description: 'Deselect component',
       action: () => {
         selectInstance(null);
+      },
+      preventDefault: true,
+    },
+    {
+      keys: ['l'],
+      modifiers: ['ctrl'],
+      description: 'Toggle lock on active layer',
+      action: () => {
+        toggleLayerLock(activeLayerId);
+      },
+      preventDefault: true,
+    },
+    {
+      keys: ['l'],
+      modifiers: ['meta'],
+      description: 'Toggle lock on active layer',
+      action: () => {
+        toggleLayerLock(activeLayerId);
+      },
+      preventDefault: true,
+    },
+    // F003: Zoom shortcuts
+    {
+      keys: ['=', '+'],
+      modifiers: ['ctrl'],
+      description: 'Zoom in',
+      action: () => {
+        zoomIn();
+      },
+      preventDefault: true,
+    },
+    {
+      keys: ['=', '+'],
+      modifiers: ['meta'],
+      description: 'Zoom in',
+      action: () => {
+        zoomIn();
+      },
+      preventDefault: true,
+    },
+    {
+      keys: ['-'],
+      modifiers: ['ctrl'],
+      description: 'Zoom out',
+      action: () => {
+        zoomOut();
+      },
+      preventDefault: true,
+    },
+    {
+      keys: ['-'],
+      modifiers: ['meta'],
+      description: 'Zoom out',
+      action: () => {
+        zoomOut();
+      },
+      preventDefault: true,
+    },
+    {
+      keys: ['0'],
+      modifiers: ['ctrl'],
+      description: 'Reset zoom to 100%',
+      action: () => {
+        resetZoom();
+      },
+      preventDefault: true,
+    },
+    {
+      keys: ['0'],
+      modifiers: ['meta'],
+      description: 'Reset zoom to 100%',
+      action: () => {
+        resetZoom();
       },
       preventDefault: true,
     },
@@ -121,6 +207,12 @@ export function Canvas() {
   };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
+    // F010: Only handle selection with select tool
+    if (effectiveTool !== 'select') {
+      // TODO: Handle other tool interactions (pen, line, rectangle, etc.)
+      return;
+    }
+
     // Get click position relative to grid
     const gridRect = gridRef.current?.getBoundingClientRect();
     if (!gridRect) return;
@@ -197,32 +289,52 @@ export function Canvas() {
   }
 
   return (
-    <div
-      data-testid="canvas"
-      className={`inline-block border border-border overflow-auto ${
-        dragOver ? 'ring-2 ring-primary/50' : ''
-      }`}
-      style={{
-        backgroundColor: backgroundColor,
-        color: foregroundColor,
-      }}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
+    <div className="flex flex-col gap-4">
+      {/* F003: Zoom Controls */}
+      <ZoomControls
+        zoomPercent={zoomPercent}
+        onZoomIn={zoomIn}
+        onZoomOut={zoomOut}
+        onResetZoom={resetZoom}
+      />
+
+      {/* F003: Zoomable canvas container with wheel event support */}
       <div
-        ref={gridRef}
-        data-testid="canvas-grid"
-        className="grid font-mono cursor-pointer"
-        style={{
-          gridTemplateColumns: `repeat(${width}, 1ch)`,
-          gridTemplateRows: `repeat(${height}, 1lh)`,
-          lineHeight: '1.25',
-          fontSize: '14px',
-        }}
-        onClick={handleCanvasClick}
+        ref={containerRef}
+        data-testid="canvas-container"
+        className="inline-block overflow-auto"
       >
-        {cells}
+        <div
+          data-testid="canvas"
+          className={`inline-block border border-border ${
+            dragOver ? 'ring-2 ring-primary/50' : ''
+          }`}
+          style={{
+            backgroundColor: backgroundColor,
+            color: foregroundColor,
+            transformOrigin: 'top left',
+            transform: `scale(${zoom})`,
+          }}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <div
+            ref={gridRef}
+            data-testid="canvas-grid"
+            className="grid font-mono"
+            style={{
+              gridTemplateColumns: `repeat(${width}, 1ch)`,
+              gridTemplateRows: `repeat(${height}, 1lh)`,
+              lineHeight: '1.25',
+              fontSize: '14px',
+              cursor: currentTool.cursor,
+            }}
+            onClick={handleCanvasClick}
+          >
+            {cells}
+          </div>
+        </div>
       </div>
     </div>
   );

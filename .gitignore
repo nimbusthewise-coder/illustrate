@@ -52,3 +52,6 @@ IMPLEMENTATION_*.md
 # Keep documents folder but ignore contents
 documents/*.md
 !documents/.gitkeep
+
+# Tinker worktrees
+.worktrees/

@@ -13,8 +13,16 @@ import { useLayerStore } from '@/stores/layer-store';
  * - Click to select active layer
  */
 export function LayerPanel() {
-  const { layers, activeLayerId, addLayer, renameLayer, deleteLayer, setActiveLayer } =
-    useLayerStore();
+  const {
+    layers,
+    activeLayerId,
+    addLayer,
+    renameLayer,
+    deleteLayer,
+    setActiveLayer,
+    toggleLayerVisibility,
+    toggleLayerLock,
+  } = useLayerStore();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -100,6 +108,34 @@ export function LayerPanel() {
               onClick={() => setActiveLayer(layer.id)}
               data-testid={`layer-item-${layer.id}`}
             >
+              {/* Visibility toggle */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleLayerVisibility(layer.id);
+                }}
+                className="text-base px-1 hover:bg-muted rounded transition-colors shrink-0"
+                title={layer.visible ? 'Hide layer' : 'Show layer'}
+                data-testid={`layer-visibility-btn-${layer.id}`}
+              >
+                {layer.visible ? '👁️' : '👁️‍🗨️'}
+              </button>
+
+              {/* Lock toggle */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleLayerLock(layer.id);
+                }}
+                className={`text-base px-1 hover:bg-muted rounded transition-colors shrink-0 ${
+                  layer.locked ? 'text-warning' : 'text-muted-foreground'
+                }`}
+                title={layer.locked ? 'Unlock layer' : 'Lock layer'}
+                data-testid={`layer-lock-btn-${layer.id}`}
+              >
+                {layer.locked ? '🔒' : '🔓'}
+              </button>
+
               {/* Layer name / rename input */}
               <div className="flex-1 min-w-0">
                 {isEditing ? (
@@ -115,7 +151,9 @@ export function LayerPanel() {
                   />
                 ) : (
                   <span
-                    className="text-sm text-foreground truncate block"
+                    className={`text-sm truncate block ${
+                      layer.locked ? 'text-muted-foreground italic' : 'text-foreground'
+                    }`}
                     onDoubleClick={() => handleDoubleClick(layer.id, layer.name)}
                     data-testid={`layer-name-${layer.id}`}
                   >

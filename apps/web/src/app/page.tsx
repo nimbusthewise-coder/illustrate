@@ -6,6 +6,7 @@ import { ComponentCreationButton } from '@/components/ComponentCreationButton';
 import { Canvas } from '@/components/Canvas';
 import { ColorPicker } from '@/components/ColorPicker';
 import { GridDimensionsConfig } from '@/components/GridDimensionsConfig';
+import { ToolSelector } from '@/components/ToolSelector';
 
 export default function Home() {
   return (
@@ -19,6 +20,7 @@ export default function Home() {
         <div className="flex gap-6">
           {/* Left sidebar — Tools and colors */}
           <div className="w-64 flex-shrink-0 space-y-4">
+            <ToolSelector />
             <ColorPicker />
             <GridDimensionsConfig />
           </div>

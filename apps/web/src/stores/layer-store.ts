@@ -53,6 +53,9 @@ export interface LayerState {
   layers: Layer[];
   activeLayerId: string;
 
+  // F019: Layer hierarchy
+  expandedLayers: string[]; // IDs of expanded parent layers
+
   // Undo/redo stacks (per PRD §5.4)
   undoStack: OperationDelta[];
   redoStack: OperationDelta[];
@@ -64,6 +67,8 @@ export interface LayerState {
   getLayer: (id: string) => Layer | undefined;
   getVisibleLayers: () => Layer[];
   toggleLayerVisibility: (id: string) => void;
+  toggleLayerLock: (id: string) => void;
+  isLayerLocked: (id: string) => boolean;
   moveLayer: (id: string, direction: 'up' | 'down') => boolean;
   reorderLayer: (id: string, newIndex: number) => boolean;
 
@@ -90,6 +95,7 @@ export const useLayerStore = create<LayerState>()((set, get) => {
   return {
     layers: [defaultLayer],
     activeLayerId: defaultLayer.id,
+    expandedLayers: [],
     undoStack: [],
     redoStack: [],
 
@@ -154,6 +160,19 @@ export const useLayerStore = create<LayerState>()((set, get) => {
       }));
     },
 
+    toggleLayerLock: (id: string) => {
+      set((state) => ({
+        layers: state.layers.map((l) =>
+          l.id === id ? { ...l, locked: !l.locked } : l
+        ),
+      }));
+    },
+
+    isLayerLocked: (id: string): boolean => {
+      const layer = get().layers.find((l) => l.id === id);
+      return layer?.locked ?? false;
+    },
+
     moveLayer: (id: string, direction: 'up' | 'down'): boolean => {
       const state = get();
       const idx = state.layers.findIndex((l) => l.id === id);
@@ -187,6 +206,12 @@ export const useLayerStore = create<LayerState>()((set, get) => {
 
     // Buffer operations
     setCell: (layerId: string, row: number, col: number, char: string) => {
+      // Prevent editing locked layers
+      if (get().isLayerLocked(layerId)) {
+        console.warn(`Cannot edit locked layer: ${layerId}`);
+        return;
+      }
+
       set((state) => ({
         layers: state.layers.map((layer) => {
           if (layer.id !== layerId) return layer;
@@ -218,6 +243,12 @@ export const useLayerStore = create<LayerState>()((set, get) => {
       layerId: string,
       cells: Array<{ row: number; col: number; char: string }>
     ) => {
+      // Prevent editing locked layers
+      if (get().isLayerLocked(layerId)) {
+        console.warn(`Cannot edit locked layer: ${layerId}`);
+        return;
+      }
+
       set((state) => ({
         layers: state.layers.map((layer) => {
           if (layer.id !== layerId) return layer;

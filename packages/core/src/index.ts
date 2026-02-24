@@ -22,3 +22,4 @@ export * from './utils/terminal-colors';
 export * from './utils/terminal-detector';
 export * from './utils/terminal-layout';
 export * from './utils/streaming-renderer';
+export * from './utils/zoom';
