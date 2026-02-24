@@ -8,9 +8,9 @@
 |--------|-------|
 | Active Phase | P0 |
 | Total Cards | 64 |
-| Shipped | 7 |
+| Shipped | 10 |
 | Building | 0 |
-| Queued | 57 |
+| Queued | 54 |
 | Started | 2026-02-24 |
 
 ### Cards by Phase
@@ -28,7 +28,7 @@
 ### Shipped
 | Card | Title | Completed | Duration |
 |------|-------|-----------|----------|
-| ILL-f057 | F057: List Diagrams | 2026-02-24 16:05 | 0m || ILL-f021 | F021: Place Components on Canvas | 2026-02-24 16:05 | 7m || ILL-f048 | F048: Diagram Library | 2026-02-24 16:05 | 7m || ILL-f020 | F020: Define Reusable Named Components | 2026-02-24 15:59 | 12m || ILL-f042 | F042: Markdown Code Block Export | 2026-02-24 15:58 | 13m || ILL-f050 | F050: Cloud Persistence | 2026-02-24 15:58 | 11m || ILL-f001 | F001: Configurable Grid Dimensions | 2026-02-24 14:21 | 3m |
+| ILL-f064 | F064: Colour Picker for fg/bg | 2026-02-24 17:09 | 6m || ILL-f035 | F035: Works Natively in GitHub, Notion, Linear, READMEs | 2026-02-24 16:20 | 9m || ILL-f030 | F030: SVG Render Endpoint | 2026-02-24 16:11 | 3m || ILL-f057 | F057: List Diagrams | 2026-02-24 16:05 | 0m || ILL-f021 | F021: Place Components on Canvas | 2026-02-24 16:05 | 7m || ILL-f048 | F048: Diagram Library | 2026-02-24 16:05 | 7m || ILL-f020 | F020: Define Reusable Named Components | 2026-02-24 15:59 | 12m || ILL-f042 | F042: Markdown Code Block Export | 2026-02-24 15:58 | 13m || ILL-f050 | F050: Cloud Persistence | 2026-02-24 15:58 | 11m || ILL-f001 | F001: Configurable Grid Dimensions | 2026-02-24 14:21 | 3m |
 
 ### Key Decisions
 *Decisions will be documented as the build progresses.*

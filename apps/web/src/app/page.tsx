@@ -3,6 +3,9 @@
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { RightSidebar } from '@/components/RightSidebar';
 import { ComponentCreationButton } from '@/components/ComponentCreationButton';
+import { Canvas } from '@/components/Canvas';
+import { ColorPicker } from '@/components/ColorPicker';
+import { GridDimensionsConfig } from '@/components/GridDimensionsConfig';
 
 export default function Home() {
   return (
@@ -14,9 +17,15 @@ export default function Home() {
         </header>
 
         <div className="flex gap-6">
-          {/* Canvas area (placeholder) */}
-          <div className="flex-1 bg-card border border-border rounded-lg p-6 min-h-[600px] flex items-center justify-center">
-            <p className="text-muted-foreground text-sm">Canvas</p>
+          {/* Left sidebar — Tools and colors */}
+          <div className="w-64 flex-shrink-0 space-y-4">
+            <ColorPicker />
+            <GridDimensionsConfig />
+          </div>
+
+          {/* Canvas area */}
+          <div className="flex-1 bg-card border border-border rounded-lg p-6 min-h-[600px] flex items-center justify-center overflow-auto">
+            <Canvas />
           </div>
 
           {/* Right sidebar — Layers, Components, Properties */}

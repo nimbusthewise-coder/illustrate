@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import { ShortcutProvider } from '@/components/providers/ShortcutProvider';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <ShortcutProvider>{children}</ShortcutProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

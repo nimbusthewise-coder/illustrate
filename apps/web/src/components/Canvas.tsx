@@ -4,12 +4,16 @@ import { useState, useRef, useMemo, useEffect } from 'react';
 import { useCanvasStore } from '@/stores/canvas-store';
 import { useLayerStore } from '@/stores/layer-store';
 import { useComponentInstanceStore } from '@/stores/component-instance-store';
+import { useColorStore } from '@/stores/color-store';
 import { useComponents } from '@/hooks/useComponents';
+import { useShortcuts, useShortcutScope } from '@/hooks/useShortcuts';
 import { renderComponentToGrid } from '@/utils/componentRenderer';
 
 /**
  * Canvas — renders a character grid at the configured dimensions.
  * F021: Supports dropping components from the library to place instances.
+ * F052: Integrated with keyboard shortcuts system.
+ * F064: Integrates with color picker for foreground/background colors.
  *
  * Each cell is a <span> in a CSS Grid layout using a monospace font,
  * per PRD §8.1 (D021 DOM character grid).
@@ -23,24 +27,47 @@ export function Canvas() {
   const selectInstance = useComponentInstanceStore((s) => s.selectInstance);
   const selectedInstanceId = useComponentInstanceStore((s) => s.selectedInstanceId);
   const removeInstance = useComponentInstanceStore((s) => s.removeInstance);
+  const foregroundColor = useColorStore((s) => s.foreground);
+  const backgroundColor = useColorStore((s) => s.background);
   const { getComponent } = useComponents();
   const gridRef = useRef<HTMLDivElement>(null);
   
   const [dragOver, setDragOver] = useState(false);
 
-  // Handle keyboard shortcuts for selected instance
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedInstanceId && (e.key === 'Delete' || e.key === 'Backspace')) {
-        // Prevent default backspace navigation
-        e.preventDefault();
-        removeInstance(selectedInstanceId);
-      }
-    };
+  // Set canvas scope as active for keyboard shortcuts (F052)
+  useShortcutScope('canvas');
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedInstanceId, removeInstance]);
+  // Register canvas-specific shortcuts (F052)
+  useShortcuts([
+    {
+      keys: ['delete'],
+      description: 'Delete selected component',
+      action: () => {
+        if (selectedInstanceId) {
+          removeInstance(selectedInstanceId);
+        }
+      },
+      preventDefault: true,
+    },
+    {
+      keys: ['backspace'],
+      description: 'Delete selected component',
+      action: () => {
+        if (selectedInstanceId) {
+          removeInstance(selectedInstanceId);
+        }
+      },
+      preventDefault: true,
+    },
+    {
+      keys: ['escape'],
+      description: 'Deselect component',
+      action: () => {
+        selectInstance(null);
+      },
+      preventDefault: true,
+    },
+  ], { scope: 'canvas' });
 
   // Build a character grid with component instances rendered
   const grid = useMemo(() => {
@@ -172,9 +199,13 @@ export function Canvas() {
   return (
     <div
       data-testid="canvas"
-      className={`inline-block bg-terminal text-terminal-text border border-border overflow-auto ${
+      className={`inline-block border border-border overflow-auto ${
         dragOver ? 'ring-2 ring-primary/50' : ''
       }`}
+      style={{
+        backgroundColor: backgroundColor,
+        color: foregroundColor,
+      }}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
