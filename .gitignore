@@ -1,0 +1,54 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+.next
+out
+dist
+build
+
+# Cache
+.turbo
+.cache
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Playwright
+playwright-report
+playwright/.cache
+test-results
+
+# Worker artifacts (summaries go in documents/)
+*_SUMMARY.md
+*_COMPLETE*.md
+*_IMPLEMENTATION*.md
+*_TASK_*.md
+*_FEATURE_*.md
+*_VERIFICATION*.md
+*_DEMO.md
+TASK_*.md
+IMPLEMENTATION_*.md
+
+# Keep documents folder but ignore contents
+documents/*.md
+!documents/.gitkeep
