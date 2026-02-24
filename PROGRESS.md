@@ -8,9 +8,9 @@
 |--------|-------|
 | Active Phase | P0 |
 | Total Cards | 64 |
-| Shipped | 1 |
+| Shipped | 2 |
 | Building | 0 |
-| Queued | 63 |
+| Queued | 62 |
 | Started | 2026-02-24 |
 
 ### Cards by Phase
@@ -28,7 +28,7 @@
 ### Shipped
 | Card | Title | Completed | Duration |
 |------|-------|-----------|----------|
-| ILL-f001 | F001: Configurable Grid Dimensions | 2026-02-24 14:21 | 3m |
+| ILL-f050 | F050: Cloud Persistence | 2026-02-24 15:58 | 11m || ILL-f001 | F001: Configurable Grid Dimensions | 2026-02-24 14:21 | 3m |
 
 ### Key Decisions
 *Decisions will be documented as the build progresses.*
