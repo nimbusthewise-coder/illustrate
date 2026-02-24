@@ -12,6 +12,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@illustrate.md/core": "workspace:*",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.97.0",
     "next": "^15.1.0",
