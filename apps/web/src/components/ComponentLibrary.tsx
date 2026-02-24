@@ -1,6 +1,7 @@
 /**
  * ComponentLibrary - Display and manage component library
  * Shows all defined components with search, filter, and CRUD operations
+ * F021: Supports drag-and-drop to place components on canvas
  */
 
 'use client';
@@ -125,12 +126,33 @@ export function ComponentLibrary() {
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {filteredComponents.map((component) => (
-              <div key={component.id} className="relative group">
+              <div
+                key={component.id}
+                className="relative group cursor-move"
+                draggable
+                onDragStart={(e) => {
+                  // Store component ID in drag data
+                  e.dataTransfer.setData('componentId', component.id);
+                  e.dataTransfer.effectAllowed = 'copy';
+                  
+                  // Create a drag image preview
+                  const dragImage = e.currentTarget.cloneNode(true) as HTMLElement;
+                  dragImage.style.opacity = '0.8';
+                  document.body.appendChild(dragImage);
+                  e.dataTransfer.setDragImage(dragImage, 0, 0);
+                  setTimeout(() => document.body.removeChild(dragImage), 0);
+                }}
+              >
                 <ComponentThumbnail
                   component={component}
                   onClick={() => selectComponent(component.id)}
                   selected={selectedComponentId === component.id}
                 />
+                
+                {/* Drag indicator */}
+                <div className="absolute top-1 left-1 w-6 h-6 rounded bg-primary/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  <span className="text-xs text-primary">⋮⋮</span>
+                </div>
                 
                 {/* Delete button */}
                 <button

@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { LayerPanel } from './LayerPanel';
 import { ComponentLibrary } from './ComponentLibrary';
 import { ComponentDefinitionPanel } from './ComponentDefinitionPanel';
+import { ComponentInstancePanel } from './ComponentInstancePanel';
 
 type Tab = 'layers' | 'components' | 'properties';
 
@@ -45,8 +46,9 @@ export function RightSidebar() {
       {/* Tab Content */}
       <div className="flex-1 overflow-hidden">
         {activeTab === 'layers' && (
-          <div className="h-full overflow-auto p-4">
+          <div className="h-full overflow-auto p-4 space-y-4">
             <LayerPanel />
+            <ComponentInstancePanel />
           </div>
         )}
         {activeTab === 'components' && (
