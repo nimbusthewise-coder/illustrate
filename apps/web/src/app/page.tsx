@@ -86,7 +86,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/editor"
-              className="px-6 py-0 border border-border text-foreground rounded-full hover:bg-muted transition-colors"
+              className="px-6 py-3 border border-border text-foreground rounded-full hover:bg-muted transition-colors"
             >
               Try without account
             </Link>
