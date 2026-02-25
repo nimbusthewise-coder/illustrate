@@ -13,7 +13,7 @@ import { useZoom } from '@/hooks/useZoom';
 import { ZoomControls } from '@/components/ZoomControls';
 import { TOOLS } from '@/types/tools';
 import { renderComponentToGrid } from '@/utils/componentRenderer';
-import { drawLine, drawRectangle, drawEllipse } from '@illustrate.md/core';
+import { getLinePoints, getBoxPoints, BOX_CHARS, LINE_CHARS } from '@illustrate.md/core';
 
 /**
  * Canvas — renders a character grid at the configured dimensions.
@@ -332,36 +332,52 @@ export function Canvas() {
       case 'line':
       case 'arrow': {
         if (!drawStart) return;
-        // Preview line
-        const lineChars = drawLine(drawStart.col, drawStart.row, col, row);
-        setDrawPreview(lineChars.map(c => ({ row: c.y, col: c.x, char: effectiveTool === 'arrow' ? '-' : '─' })));
+        // Preview line using core getLinePoints
+        const start = { row: drawStart.row, col: drawStart.col };
+        const end = { row, col };
+        const linePoints = getLinePoints(start, end);
+        const lineChar = effectiveTool === 'arrow' ? '→' : LINE_CHARS.horizontal;
+        setDrawPreview(linePoints.map(p => ({ row: p.row, col: p.col, char: lineChar })));
         break;
       }
 
       case 'rectangle':
       case 'box': {
         if (!drawStart) return;
-        // Preview rectangle
-        const rectChars = drawRectangle(
-          Math.min(drawStart.col, col),
-          Math.min(drawStart.row, row),
-          Math.abs(col - drawStart.col) + 1,
-          Math.abs(row - drawStart.row) + 1
-        );
-        setDrawPreview(rectChars.map(c => ({ row: c.y, col: c.x, char: c.char })));
+        // Preview box using core getBoxPoints
+        const start = { row: drawStart.row, col: drawStart.col };
+        const end = { row, col };
+        const boxPoints = getBoxPoints(start, end, 'outline');
+        // Map points to box characters based on position
+        const preview = boxPoints.map(p => {
+          // Determine which box char to use based on position
+          const isTop = p.row === Math.min(start.row, end.row);
+          const isBottom = p.row === Math.max(start.row, end.row);
+          const isLeft = p.col === Math.min(start.col, end.col);
+          const isRight = p.col === Math.max(start.col, end.col);
+          
+          let char = ' ';
+          if (isTop && isLeft) char = BOX_CHARS.topLeft;
+          else if (isTop && isRight) char = BOX_CHARS.topRight;
+          else if (isBottom && isLeft) char = BOX_CHARS.bottomLeft;
+          else if (isBottom && isRight) char = BOX_CHARS.bottomRight;
+          else if (isTop || isBottom) char = BOX_CHARS.horizontal;
+          else if (isLeft || isRight) char = BOX_CHARS.vertical;
+          
+          return { row: p.row, col: p.col, char };
+        });
+        setDrawPreview(preview);
         break;
       }
 
       case 'ellipse': {
         if (!drawStart) return;
-        // Preview ellipse
-        const ellipseChars = drawEllipse(
-          Math.min(drawStart.col, col),
-          Math.min(drawStart.row, row),
-          Math.abs(col - drawStart.col) + 1,
-          Math.abs(row - drawStart.row) + 1
-        );
-        setDrawPreview(ellipseChars.map(c => ({ row: c.y, col: c.x, char: c.char })));
+        // Ellipse not implemented in core - use simple circle approximation
+        // For now, just draw a box outline as placeholder
+        const start = { row: drawStart.row, col: drawStart.col };
+        const end = { row, col };
+        const boxPoints = getBoxPoints(start, end, 'outline');
+        setDrawPreview(boxPoints.map(p => ({ row: p.row, col: p.col, char: '○' })));
         break;
       }
 
