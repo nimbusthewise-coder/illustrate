@@ -201,11 +201,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ASCII Divider - Centered 
+      {/* ASCII Divider - Centered */}
       <div className="text-center">
-        <pre className="text-muted-foreground/30 text-xs inline-block">────────────────────────────────────────────────────────────────────────────────</pre>
+        <pre className="text-muted-foreground/30 text-xs inline-block">─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─</pre>
       </div>
-*/}
+
       {/* Use Cases - 3x3 Grid */}
       <section className="py-16 px-4">
         <div className="max-w-5xl mx-auto">
