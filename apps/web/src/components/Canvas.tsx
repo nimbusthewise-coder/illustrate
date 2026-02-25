@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { useCanvasStore } from '@/stores/canvas-store';
 import { useLayerStore } from '@/stores/layer-store';
 import { useComponentInstanceStore } from '@/stores/component-instance-store';
@@ -8,10 +8,12 @@ import { useColorStore } from '@/stores/color-store';
 import { useComponents } from '@/hooks/useComponents';
 import { useShortcuts, useShortcutScope } from '@/hooks/useShortcuts';
 import { useToolSelection } from '@/hooks/useToolSelection';
+import { useFillTool } from '@/hooks/useFillTool';
 import { useZoom } from '@/hooks/useZoom';
 import { ZoomControls } from '@/components/ZoomControls';
 import { TOOLS } from '@/types/tools';
 import { renderComponentToGrid } from '@/utils/componentRenderer';
+import { drawLine, drawRectangle, drawEllipse } from '@illustrate.md/core';
 
 /**
  * Canvas — renders a character grid at the configured dimensions.
