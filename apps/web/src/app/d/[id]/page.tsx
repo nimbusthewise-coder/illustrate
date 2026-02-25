@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useDiagramStore } from '@/stores/diagram-store';
-import { useLayerStore } from '@/stores/layer-store';
-import { useCanvasStore } from '@/stores/canvas-store';
 import { LogoMark } from '@/components/icons';
 import { ThemeSelector } from '@/components/ThemeSelector';
 
@@ -17,8 +15,7 @@ export default function DiagramViewPage() {
   const getDiagram = useDiagramStore((s) => s.getDiagram);
   const _loadFromStorage = useDiagramStore((s) => s._loadFromStorage);
   const selectDiagram = useDiagramStore((s) => s.selectDiagram);
-  const setLayers = useLayerStore((s) => s.setLayers);
-  const setDimensions = useCanvasStore((s) => s.setDimensions);
+  const markOpened = useDiagramStore((s) => s.markOpened);
   
   const [ascii, setAscii] = useState<string | null>(null);
   const [diagramName, setDiagramName] = useState<string>('');
@@ -80,14 +77,10 @@ export default function DiagramViewPage() {
   }, [id, getDiagram, loaded]);
 
   const handleEdit = () => {
-    const diagram = getDiagram(id);
-    if (diagram) {
-      // Load diagram into editor
-      setDimensions(diagram.width, diagram.height);
-      setLayers(diagram.layers);
-      selectDiagram(diagram.id);
-      router.push('/editor');
-    }
+    // Select diagram and navigate to editor with ID in URL
+    selectDiagram(id);
+    markOpened(id);
+    router.push(`/editor?load=${id}`);
   };
 
   const handleCopy = async () => {
