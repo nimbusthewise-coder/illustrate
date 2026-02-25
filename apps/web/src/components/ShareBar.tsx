@@ -4,9 +4,9 @@ import { useState, useCallback } from 'react';
 import { useDiagramStore } from '@/stores/diagram-store';
 import { useLayerStore } from '@/stores/layer-store';
 import { useCanvasStore } from '@/stores/canvas-store';
-import { exportLLMFormatAsText } from '@illustrate.md/core';
 
 type CopyState = 'idle' | 'copied' | 'error';
+type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 interface CopyButtonProps {
   label: string;
