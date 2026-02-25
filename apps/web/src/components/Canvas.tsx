@@ -405,26 +405,36 @@ export function Canvas() {
       case 'line':
       case 'arrow': {
         if (!drawStart) return;
-        // Preview line using core getLinePoints
+        // Preview line using core getLinePoints (which snaps to angles)
         const start = { row: drawStart.row, col: drawStart.col };
         const end = { row, col };
         const linePoints = getLinePoints(start, end);
         
-        // Determine line character based on direction
-        const dx = col - drawStart.col;
-        const dy = row - drawStart.row;
+        if (linePoints.length < 2) {
+          setDrawPreview([{ row: drawStart.row, col: drawStart.col, char: '·' }]);
+          break;
+        }
+        
+        // Determine character from ACTUAL snapped line direction (not input)
+        const actualStart = linePoints[0];
+        const actualEnd = linePoints[linePoints.length - 1];
+        const dx = actualEnd.col - actualStart.col;
+        const dy = actualEnd.row - actualStart.row;
+        
         let lineChar: string;
         if (effectiveTool === 'arrow') {
-          // Arrow head at end
-          if (Math.abs(dx) > Math.abs(dy)) {
-            lineChar = dx > 0 ? '→' : '←';
-          } else if (dy !== 0) {
+          // Arrow head based on snapped direction
+          if (dy === 0) {
+            lineChar = dx >= 0 ? '→' : '←';
+          } else if (dx === 0) {
             lineChar = dy > 0 ? '↓' : '↑';
+          } else if ((dx > 0 && dy > 0) || (dx < 0 && dy < 0)) {
+            lineChar = dx > 0 ? '↘' : '↖';
           } else {
-            lineChar = '→';
+            lineChar = dx > 0 ? '↗' : '↙';
           }
         } else {
-          // Line character based on direction
+          // Line character based on snapped direction
           if (dy === 0) {
             lineChar = LINE_CHARS.HORIZONTAL;
           } else if (dx === 0) {
