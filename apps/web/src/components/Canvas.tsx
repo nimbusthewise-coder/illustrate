@@ -707,7 +707,7 @@ export function Canvas() {
       default:
         break;
     }
-  }, [isDrawing, effectiveTool, drawStart, activeLayerId, setCell, getCellFromEvent]);
+  }, [isDrawing, effectiveTool, drawStart, activeLayerId, setCell, getCellFromEvent, draggingInstanceId, dragOffset, moveInstance]);
 
   // Handle mouse up — commit shape drawing
   const handleMouseUp = useCallback(() => {
@@ -746,7 +746,7 @@ export function Canvas() {
     setDrawStart(null);
     lastCellRef.current = null;
     setDrawPreview([]);
-  }, [isDrawing, drawPreview, activeLayerId, setCells, effectiveTool, selectionStart, selectionEnd]);
+  }, [isDrawing, drawPreview, activeLayerId, setCells, effectiveTool, selectionStart, selectionEnd, draggingInstanceId]);
 
   // Legacy click handler (kept for component selection)
   const handleCanvasClick = (e: React.MouseEvent) => {
