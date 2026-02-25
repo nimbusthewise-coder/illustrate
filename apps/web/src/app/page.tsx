@@ -54,7 +54,7 @@ export default function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="py-16 px-4">
+      <section className="py-32 px-4">
         <div className="max-w-5xl mx-auto">
           {/* ASCII Hero Art */}
           <pre className="text-primary text-[10px] sm:text-xs leading-tight mb-12 text-center overflow-x-auto">{`
