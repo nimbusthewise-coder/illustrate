@@ -487,6 +487,12 @@ export function Canvas() {
   // Build cells from the rendered grid with selection highlighting
   const cells: React.ReactNode[] = [];
   
+  // Build preview lookup map for O(1) access
+  const previewMap = new Map<string, string>();
+  for (const p of drawPreview) {
+    previewMap.set(`${p.row}-${p.col}`, p.char);
+  }
+  
   // Determine which cells belong to selected instance
   const selectedCells = new Set<string>();
   if (selectedInstanceId) {
@@ -506,9 +512,11 @@ export function Canvas() {
   
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
-      const char = grid[row][col];
       const cellKey = `${row}-${col}`;
+      const previewChar = previewMap.get(cellKey);
+      const char = previewChar || grid[row][col];
       const isSelected = selectedCells.has(cellKey);
+      const isPreview = !!previewChar;
       
       cells.push(
         <span
@@ -517,7 +525,7 @@ export function Canvas() {
           data-col={col}
           className={`select-none text-center leading-none ${
             isSelected ? 'bg-primary/20' : ''
-          }`}
+          } ${isPreview ? 'text-primary/70' : ''}`}
         >
           {char}
         </span>,
@@ -573,19 +581,6 @@ export function Canvas() {
             onMouseLeave={handleMouseUp}
           >
             {cells}
-            {/* Render drawing preview overlay */}
-            {drawPreview.map((p, i) => (
-              <span
-                key={`preview-${i}`}
-                className="absolute pointer-events-none text-primary/70"
-                style={{
-                  gridColumn: p.col + 1,
-                  gridRow: p.row + 1,
-                }}
-              >
-                {p.char}
-              </span>
-            ))}
           </div>
         </div>
       </div>
