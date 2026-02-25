@@ -352,7 +352,7 @@ export default function LandingPage() {
       {/* CTA */}
       <section className="py-20 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <pre className="text-primary text-xs mb-8 inline-block">{`┌─────────────────────────────────┐
+          <pre className="text-primary text-xs mb-8 inline-block">{`┌─────────────────────────────┐
 │   Ready to start drawing?   │
 └─────────────────────────────┘`}</pre>
           
