@@ -18,10 +18,11 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border">
+      <header className="">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <LogoMark size={28} />
+            <span className="text-xl font-bold text-foreground"></span>
           </Link>
           <div className="flex items-center gap-4">
             {/*<ThemeSelector />*/}
