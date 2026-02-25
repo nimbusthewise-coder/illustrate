@@ -202,6 +202,72 @@ export function Canvas() {
       action: () => redo(),
       preventDefault: true,
     },
+    // Copy/paste
+    {
+      keys: ['c'],
+      modifiers: ['meta'],
+      description: 'Copy selection',
+      action: () => {
+        copySelection(layers);
+      },
+      preventDefault: true,
+    },
+    {
+      keys: ['c'],
+      modifiers: ['ctrl'],
+      description: 'Copy selection',
+      action: () => {
+        copySelection(layers);
+      },
+      preventDefault: true,
+    },
+    {
+      keys: ['v'],
+      modifiers: ['meta'],
+      description: 'Paste',
+      action: () => {
+        if (!clipboard) return;
+        // Paste at selection start or (0,0)
+        const pasteRow = selectionStart?.row ?? 0;
+        const pasteCol = selectionStart?.col ?? 0;
+        const cells: Array<{ row: number; col: number; char: string }> = [];
+        for (let r = 0; r < clipboard.height; r++) {
+          for (let c = 0; c < clipboard.width; c++) {
+            const char = clipboard.chars[r]?.[c];
+            if (char && char !== ' ') {
+              cells.push({ row: pasteRow + r, col: pasteCol + c, char });
+            }
+          }
+        }
+        if (cells.length > 0) {
+          setCellsWithUndo(activeLayerId, cells);
+        }
+      },
+      preventDefault: true,
+    },
+    {
+      keys: ['v'],
+      modifiers: ['ctrl'],
+      description: 'Paste',
+      action: () => {
+        if (!clipboard) return;
+        const pasteRow = selectionStart?.row ?? 0;
+        const pasteCol = selectionStart?.col ?? 0;
+        const cells: Array<{ row: number; col: number; char: string }> = [];
+        for (let r = 0; r < clipboard.height; r++) {
+          for (let c = 0; c < clipboard.width; c++) {
+            const char = clipboard.chars[r]?.[c];
+            if (char && char !== ' ') {
+              cells.push({ row: pasteRow + r, col: pasteCol + c, char });
+            }
+          }
+        }
+        if (cells.length > 0) {
+          setCellsWithUndo(activeLayerId, cells);
+        }
+      },
+      preventDefault: true,
+    },
     // F003: Zoom shortcuts
     {
       keys: ['=', '+'],
