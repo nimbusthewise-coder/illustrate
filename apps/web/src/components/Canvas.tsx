@@ -14,6 +14,7 @@ import { ZoomControls } from '@/components/ZoomControls';
 import { TOOLS } from '@/types/tools';
 import { renderComponentToGrid } from '@/utils/componentRenderer';
 import { getLinePoints, getBoxPoints, BOX_CHARS, LINE_CHARS } from '@illustrate.md/core';
+import { useSelectionStore } from '@/stores/selection-store';
 
 /**
  * Bresenham's line algorithm — returns all points between (x0,y0) and (x1,y1)
