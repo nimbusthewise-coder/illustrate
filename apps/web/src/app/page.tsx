@@ -102,11 +102,11 @@ export default function LandingPage() {
       {/* Demo Preview */}
       <section className="py-16 px-4">
         <div className="max-w-4xl mx-auto flex justify-center">
-          <pre className="text-foreground text-xs sm:text-sm leading-relaxed">{`┌─────────────────────────────────────────────────────────────────────────┐
-│                                                                         │
-│       ┌──────────┐         ┌──────────┐         ┌──────────┐            │
-│       │  Client  │────────▶│   API    │────────▶│ Database │            │
-│       └──────────┘         └──────────┘         └──────────┘            │
+          <pre className="text-foreground text-xs sm:text-sm leading-relaxed">{`┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│       ┌──────────┐         ┌──────────┐         ┌──────────┐        │
+│       │  Client  │────────▶│   API    │────────▶│ Database │        │
+│       └──────────┘         └──────────┘         └──────────┘        │
 │            │                    │                    │                     │
 │            │                    │                    │                     │
 │            ▼                    ▼                    ▼                     │
