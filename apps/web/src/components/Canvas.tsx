@@ -1021,7 +1021,20 @@ export function Canvas() {
     for (let col = 0; col < width; col++) {
       const cellKey = `${row}-${col}`;
       const previewChar = previewMap.get(cellKey);
-      const char = previewChar || grid[row][col];
+      
+      // Hide original content while dragging selection
+      let baseChar = grid[row][col];
+      if (isDraggingSelection && selectionOriginalBounds) {
+        const inOriginal = row >= selectionOriginalBounds.minRow && 
+                          row <= selectionOriginalBounds.maxRow &&
+                          col >= selectionOriginalBounds.minCol && 
+                          col <= selectionOriginalBounds.maxCol;
+        if (inOriginal) {
+          baseChar = ' '; // Hide original during drag
+        }
+      }
+      
+      const char = previewChar || baseChar;
       const isSelected = selectedCells.has(cellKey);
       const isPreview = !!previewChar;
       const isTextCursor = textCursor?.row === row && textCursor?.col === col;
