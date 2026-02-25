@@ -126,6 +126,9 @@ export interface LayerState {
 
   // Export
   exportToAscii: () => string;
+
+  // Resize all layer buffers when canvas dimensions change
+  resizeAllLayers: (newWidth: number, newHeight: number) => void;
 }
 
 export const useLayerStore = create<LayerState>()((set, get) => {
@@ -406,6 +409,19 @@ export const useLayerStore = create<LayerState>()((set, get) => {
         canvasState.width,
         canvasState.height
       );
+    },
+
+    // Resize all layer buffers when canvas dimensions change
+    resizeAllLayers: (newWidth: number, newHeight: number) => {
+      set((state) => ({
+        layers: state.layers.map((layer) => ({
+          ...layer,
+          buffer: resizeBuffer(layer.buffer, newWidth, newHeight),
+        })),
+        // Clear undo/redo stacks on resize (indices would be invalid)
+        undoStack: [],
+        redoStack: [],
+      }));
     },
   };
 });
