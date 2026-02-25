@@ -204,21 +204,31 @@ export function Canvas() {
     },
   ], { scope: 'canvas' });
 
-  // Build a character grid from layer buffer + component instances
+  // Build a character grid by compositing all visible layers (bottom to top)
   const activeLayer = layers.find(l => l.id === activeLayerId);
   
   const grid = useMemo(() => {
-    // Initialize from layer buffer if available, otherwise empty
-    const cells: string[][] = Array.from({ length: height }, (_, row) =>
-      Array.from({ length: width }, (_, col) => {
-        if (activeLayer?.buffer) {
-          const idx = row * activeLayer.buffer.width + col;
-          const char = activeLayer.buffer.chars[idx];
-          return char || ' ';
-        }
-        return ' ';
-      })
+    // Initialize empty grid
+    const cells: string[][] = Array.from({ length: height }, () =>
+      Array(width).fill(' ')
     );
+
+    // Composite all visible layers (bottom to top order)
+    // Layers are stored with index 0 = bottom, so iterate in order
+    for (const layer of layers) {
+      if (!layer.visible || !layer.buffer) continue;
+      
+      for (let row = 0; row < height; row++) {
+        for (let col = 0; col < width; col++) {
+          const idx = row * layer.buffer.width + col;
+          const char = layer.buffer.chars[idx];
+          // Only overwrite if not a space (transparent)
+          if (char && char !== ' ') {
+            cells[row][col] = char;
+          }
+        }
+      }
+    }
 
     // Render each component instance on top
     for (const instance of instances) {
@@ -229,7 +239,7 @@ export function Canvas() {
     }
 
     return cells;
-  }, [width, height, instances, getComponent, activeLayer, layers]);
+  }, [width, height, instances, getComponent, layers]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
