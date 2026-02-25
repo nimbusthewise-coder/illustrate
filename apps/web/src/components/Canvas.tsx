@@ -676,7 +676,7 @@ export function Canvas() {
     }
     
     // Handle selection dragging (move tool)
-    if (isDraggingSelection && selectionOriginalBounds) {
+    if (isDraggingSelection && selectionOriginalBounds && selectionContent.length > 0) {
       const newMinRow = row - selectionDragOffset.row;
       const newMinCol = col - selectionDragOffset.col;
       const height = selectionOriginalBounds.maxRow - selectionOriginalBounds.minRow;
@@ -685,6 +685,14 @@ export function Canvas() {
       // Update selection bounds to show new position
       setSelectionStart({ row: newMinRow, col: newMinCol });
       setSelectionEnd({ row: newMinRow + height, col: newMinCol + width });
+      
+      // Show content preview at new position
+      const preview = selectionContent.map(item => ({
+        row: newMinRow + item.row,
+        col: newMinCol + item.col,
+        char: item.char,
+      }));
+      setDrawPreview(preview);
       return;
     }
 
