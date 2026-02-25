@@ -229,7 +229,20 @@ export function renderComponentToGrid(
   offsetX: number,
   offsetY: number,
 ): void {
-  // Render each element in the component
+  // If component has charGrid, use that (simpler char-based component)
+  if (component.charGrid && component.charGrid.length > 0) {
+    for (let row = 0; row < component.charGrid.length; row++) {
+      for (let col = 0; col < component.charGrid[row].length; col++) {
+        const char = component.charGrid[row][col];
+        if (char && char !== ' ') {
+          setCell(grid, row + offsetY, col + offsetX, char);
+        }
+      }
+    }
+    return;
+  }
+
+  // Otherwise render each element in the component
   for (const element of component.elements) {
     switch (element.type) {
       case 'box':
@@ -252,6 +265,11 @@ export function renderComponentToGrid(
  * Create a preview grid for a component (useful for thumbnails)
  */
 export function createComponentPreview(component: ComponentDefinition): string[][] {
+  // If charGrid exists, return it directly
+  if (component.charGrid && component.charGrid.length > 0) {
+    return component.charGrid;
+  }
+
   const { boundingBox } = component;
   const grid: string[][] = Array.from({ length: boundingBox.height }, () =>
     Array(boundingBox.width).fill(' ')
