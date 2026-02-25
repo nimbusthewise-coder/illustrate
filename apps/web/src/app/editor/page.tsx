@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { RightSidebar } from '@/components/RightSidebar';
@@ -11,6 +12,7 @@ import { ToolSelector } from '@/components/ToolSelector';
 import { UserMenu } from '@/components/UserMenu';
 import { LogoMark } from '@/components/icons';
 import { ShareBar } from '@/components/ShareBar';
+import { DiagramLoader } from '@/components/DiagramLoader';
 
 export default function EditorPage() {
   return (
@@ -53,6 +55,11 @@ export default function EditorPage() {
 
       {/* Floating action button for component creation */}
       <ComponentCreationButton />
+      
+      {/* Load diagram from URL if specified */}
+      <Suspense fallback={null}>
+        <DiagramLoader />
+      </Suspense>
     </main>
   );
 }
