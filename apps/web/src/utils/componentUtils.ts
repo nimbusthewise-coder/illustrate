@@ -104,18 +104,23 @@ export function validateComponentName(
 }
 
 /**
- * Validate component elements
+ * Validate component content (elements or charGrid)
  */
 export function validateComponentElements(
   elements: CanvasElement[],
+  charGrid?: string[],
 ): ValidationResult {
   const errors: string[] = [];
 
-  if (elements.length === 0) {
+  // Accept either elements OR charGrid
+  const hasElements = elements.length > 0;
+  const hasCharGrid = charGrid && charGrid.length > 0 && charGrid.some(row => row.length > 0);
+
+  if (!hasElements && !hasCharGrid) {
     errors.push('Component must contain at least one element');
   }
 
-  // Check for invalid dimensions
+  // Check for invalid dimensions in elements
   for (const element of elements) {
     if (element.width <= 0 || element.height <= 0) {
       errors.push(`Element ${element.id} has invalid dimensions`);
@@ -146,7 +151,7 @@ export function validateComponent(
     return nameValidation;
   }
 
-  const elementsValidation = validateComponentElements(component.elements);
+  const elementsValidation = validateComponentElements(component.elements, component.charGrid);
   if (!elementsValidation.valid) {
     return elementsValidation;
   }
