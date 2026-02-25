@@ -18,7 +18,7 @@ export default function LibraryPage() {
             </a>
             <div className="flex items-center gap-2">
               <LogoMark size={32} />
-              <h1 className="text-3xl font-bold">illustrate.md</h1>
+              <h1 className="text-3xl font-bold"></h1>
             </div>
           </div>
           <ThemeSelector />
