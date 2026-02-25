@@ -421,32 +421,34 @@ export function Canvas() {
         const dx = actualEnd.col - actualStart.col;
         const dy = actualEnd.row - actualStart.row;
         
+        // Line character based on snapped direction
         let lineChar: string;
-        if (effectiveTool === 'arrow') {
-          // Arrow head based on snapped direction
-          if (dy === 0) {
-            lineChar = dx >= 0 ? '→' : '←';
-          } else if (dx === 0) {
-            lineChar = dy > 0 ? '↓' : '↑';
-          } else if ((dx > 0 && dy > 0) || (dx < 0 && dy < 0)) {
-            lineChar = dx > 0 ? '↘' : '↖';
-          } else {
-            lineChar = dx > 0 ? '↗' : '↙';
-          }
+        let arrowHead: string;
+        
+        if (dy === 0) {
+          lineChar = LINE_CHARS.HORIZONTAL;
+          arrowHead = dx >= 0 ? '→' : '←';
+        } else if (dx === 0) {
+          lineChar = LINE_CHARS.VERTICAL;
+          arrowHead = dy > 0 ? '↓' : '↑';
+        } else if ((dx > 0 && dy > 0) || (dx < 0 && dy < 0)) {
+          lineChar = LINE_CHARS.DIAGONAL_DOWN; // ╲
+          arrowHead = dx > 0 ? '↘' : '↖';
         } else {
-          // Line character based on snapped direction
-          if (dy === 0) {
-            lineChar = LINE_CHARS.HORIZONTAL;
-          } else if (dx === 0) {
-            lineChar = LINE_CHARS.VERTICAL;
-          } else if ((dx > 0 && dy > 0) || (dx < 0 && dy < 0)) {
-            lineChar = LINE_CHARS.DIAGONAL_DOWN; // ╲
-          } else {
-            lineChar = LINE_CHARS.DIAGONAL_UP; // ╱
-          }
+          lineChar = LINE_CHARS.DIAGONAL_UP; // ╱
+          arrowHead = dx > 0 ? '↗' : '↙';
         }
         
-        setDrawPreview(linePoints.map(p => ({ row: p.row, col: p.col, char: lineChar })));
+        // For arrow tool: use line chars with arrowhead at end
+        if (effectiveTool === 'arrow') {
+          setDrawPreview(linePoints.map((p, i) => ({
+            row: p.row,
+            col: p.col,
+            char: i === linePoints.length - 1 ? arrowHead : lineChar,
+          })));
+        } else {
+          setDrawPreview(linePoints.map(p => ({ row: p.row, col: p.col, char: lineChar })));
+        }
         break;
       }
 
