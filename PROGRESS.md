@@ -28,6 +28,7 @@
 | R009 | Pen Tool | 🟡 Medium | Pen/eraser skips cells on fast mouse drag — need interpolation | ✅ Fixed |
 | R011 | Pen Tool | 🟡 Medium | Pen snaps to angles instead of following mouse — was using getLinePoints which snaps | ✅ Fixed |
 | R012 | Pen Tool | 🟡 Medium | Pen draws "spray" from origin — lastCell state stale due to React batching | ✅ Fixed |
+| R013 | Canvas | 🟡 Medium | Drawing not visible until mouseup — getLayer() wasn't reactive | ✅ Fixed |
 | R010 | Box Tool | ⚪ Low | Overlapping boxes don't merge corners into ┼ intersections | Open |
 | R002 | ColorPicker | 🟡 Minor | Hydration mismatch — `hexInput` initialized empty, then set via useEffect. Also browser extension interference (`data-np-*` attrs) | Open |
 | R003 | Layers | ⚪ Untested | Layer functionality not yet verified | Open |
