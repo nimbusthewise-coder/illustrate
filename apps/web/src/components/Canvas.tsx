@@ -170,14 +170,23 @@ export function Canvas() {
     },
   ], { scope: 'canvas' });
 
-  // Build a character grid with component instances rendered
+  // Build a character grid from layer buffer + component instances
+  const activeLayer = getLayer(activeLayerId);
+  
   const grid = useMemo(() => {
-    // Initialize empty grid
-    const cells: string[][] = Array.from({ length: height }, () =>
-      Array(width).fill(' ')
+    // Initialize from layer buffer if available, otherwise empty
+    const cells: string[][] = Array.from({ length: height }, (_, row) =>
+      Array.from({ length: width }, (_, col) => {
+        if (activeLayer?.buffer) {
+          const idx = row * activeLayer.buffer.width + col;
+          const char = activeLayer.buffer.chars[idx];
+          return char || ' ';
+        }
+        return ' ';
+      })
     );
 
-    // Render each component instance
+    // Render each component instance on top
     for (const instance of instances) {
       const component = getComponent(instance.componentId);
       if (!component) continue;
@@ -186,7 +195,7 @@ export function Canvas() {
     }
 
     return cells;
-  }, [width, height, instances, getComponent]);
+  }, [width, height, instances, getComponent, activeLayer]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
