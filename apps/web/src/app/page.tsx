@@ -94,10 +94,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ASCII Divider - Centered */}
+      {/* ASCII Divider - Centered
       <div className="text-center">
         <pre className="text-muted-foreground/30 text-xs inline-block">────────────────────────────────────────────────────────────────────────────────</pre>
       </div>
+       */}
 
       {/* Demo Preview */}
       <section className="py-16 px-4">
@@ -120,11 +121,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ASCII Divider - Centered */}
+      {/* ASCII Divider - Centered 
       <div className="text-center">
         <pre className="text-muted-foreground/30 text-xs inline-block">────────────────────────────────────────────────────────────────────────────────</pre>
       </div>
-
+    */}
       {/* Features */}
       <section className="py-16 px-4">
         <div className="max-w-4xl mx-auto">
