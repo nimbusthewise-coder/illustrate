@@ -959,7 +959,7 @@ export function Canvas() {
     setDrawStart(null);
     lastCellRef.current = null;
     setDrawPreview([]);
-  }, [isDrawing, drawPreview, activeLayerId, setCellsWithUndo, effectiveTool, selectionStart, selectionEnd, draggingInstanceId]);
+  }, [isDrawing, drawPreview, activeLayerId, setCellsWithUndo, effectiveTool, selectionStart, selectionEnd, draggingInstanceId, isDraggingSelection, selectionOriginalBounds, selectionContent, setGlobalSelection]);
 
   // Legacy click handler (kept for component selection)
   const handleCanvasClick = (e: React.MouseEvent) => {
