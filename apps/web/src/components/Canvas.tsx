@@ -409,7 +409,33 @@ export function Canvas() {
         const start = { row: drawStart.row, col: drawStart.col };
         const end = { row, col };
         const linePoints = getLinePoints(start, end);
-        const lineChar = effectiveTool === 'arrow' ? '→' : LINE_CHARS.HORIZONTAL;
+        
+        // Determine line character based on direction
+        const dx = col - drawStart.col;
+        const dy = row - drawStart.row;
+        let lineChar: string;
+        if (effectiveTool === 'arrow') {
+          // Arrow head at end
+          if (Math.abs(dx) > Math.abs(dy)) {
+            lineChar = dx > 0 ? '→' : '←';
+          } else if (dy !== 0) {
+            lineChar = dy > 0 ? '↓' : '↑';
+          } else {
+            lineChar = '→';
+          }
+        } else {
+          // Line character based on direction
+          if (dy === 0) {
+            lineChar = LINE_CHARS.HORIZONTAL;
+          } else if (dx === 0) {
+            lineChar = LINE_CHARS.VERTICAL;
+          } else if ((dx > 0 && dy > 0) || (dx < 0 && dy < 0)) {
+            lineChar = LINE_CHARS.DIAGONAL_DOWN; // ╲
+          } else {
+            lineChar = LINE_CHARS.DIAGONAL_UP; // ╱
+          }
+        }
+        
         setDrawPreview(linePoints.map(p => ({ row: p.row, col: p.col, char: lineChar })));
         break;
       }
