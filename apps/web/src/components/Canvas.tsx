@@ -364,27 +364,29 @@ export function Canvas() {
       case 'pen':
       case 'text': {
         // Interpolate from last cell using raw Bresenham (no angle snapping)
-        if (lastCell && (lastCell.row !== row || lastCell.col !== col)) {
-          const points = bresenhamLine(lastCell.col, lastCell.row, col, row);
+        const last = lastCellRef.current;
+        if (last && (last.row !== row || last.col !== col)) {
+          const points = bresenhamLine(last.col, last.row, col, row);
           const cells = points.map(p => ({ row: p.y, col: p.x, char: '█' }));
           setCells(activeLayerId, cells);
         } else {
           setCell(activeLayerId, row, col, '█');
         }
-        setLastCell({ row, col });
+        lastCellRef.current = { row, col };
         break;
       }
 
       case 'eraser': {
         // Interpolate from last cell using raw Bresenham (no angle snapping)
-        if (lastCell && (lastCell.row !== row || lastCell.col !== col)) {
-          const points = bresenhamLine(lastCell.col, lastCell.row, col, row);
+        const last = lastCellRef.current;
+        if (last && (last.row !== row || last.col !== col)) {
+          const points = bresenhamLine(last.col, last.row, col, row);
           const cells = points.map(p => ({ row: p.y, col: p.x, char: ' ' }));
           setCells(activeLayerId, cells);
         } else {
           setCell(activeLayerId, row, col, ' ');
         }
-        setLastCell({ row, col });
+        lastCellRef.current = { row, col };
         break;
       }
 
@@ -461,7 +463,7 @@ export function Canvas() {
 
     setIsDrawing(false);
     setDrawStart(null);
-    setLastCell(null);
+    lastCellRef.current = null;
     setDrawPreview([]);
   }, [isDrawing, drawPreview, activeLayerId, setCells]);
 
