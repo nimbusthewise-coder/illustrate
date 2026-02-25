@@ -100,7 +100,7 @@ export default function LandingPage() {
       </div>
  */}
 
-      {/* Demo Preview */}
+      {/* Demo Preview 
       <section className="py-4 px-4">
         <div className="max-w-4xl mx-auto flex justify-center">
           <pre className="text-foreground text-xs sm:text-sm leading-relaxed">{`┌─────────────────────────────────────────────────────────────────────┐
@@ -120,6 +120,7 @@ export default function LandingPage() {
 └─────────────────────────────────────────────────────────────────────┘`}</pre>
         </div>
       </section>
+*/}
 
       {/* ASCII Divider - Centered */}
       <div className="text-center">
@@ -372,7 +373,6 @@ export default function LandingPage() {
       <footer className="border-t border-border py-8 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-6">
-            <pre className="text-muted-foreground/30 text-xs inline-block">────────────────────────────────────────────────────────────────────────────────</pre>
           </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <p>© 2026 illustrate.md</p>
