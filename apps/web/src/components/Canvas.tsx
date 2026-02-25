@@ -82,6 +82,10 @@ export function Canvas() {
   const [textCursor, setTextCursor] = useState<{ row: number; col: number } | null>(null);
   const [textStartCol, setTextStartCol] = useState<number>(0); // For Enter key
   
+  // Selection state for drawn content
+  const [selectionStart, setSelectionStart] = useState<{ row: number; col: number } | null>(null);
+  const [selectionEnd, setSelectionEnd] = useState<{ row: number; col: number } | null>(null);
+  
   // Layer mutations
   const setCell = useLayerStore((s) => s.setCell);
   const setCells = useLayerStore((s) => s.setCells);
@@ -397,7 +401,13 @@ export function Canvas() {
       case 'select': {
         // Clear text cursor when switching to select
         setTextCursor(null);
-        // Find if any instance occupies this cell
+        
+        // Start rectangular selection for drawn content
+        setSelectionStart({ row, col });
+        setSelectionEnd({ row, col });
+        setIsDrawing(true);
+        
+        // Also check for component instance selection
         let clickedInstanceId: string | null = null;
         for (const instance of instances) {
           const component = getComponent(instance.componentId);
@@ -413,7 +423,12 @@ export function Canvas() {
             break;
           }
         }
-        selectInstance(clickedInstanceId);
+        if (clickedInstanceId) {
+          selectInstance(clickedInstanceId);
+          setSelectionStart(null);
+          setSelectionEnd(null);
+          setIsDrawing(false);
+        }
         break;
       }
 
