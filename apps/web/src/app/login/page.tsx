@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/auth-store';
+import { LogoMark } from '@/components/icons';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -55,8 +56,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold text-foreground hover:text-primary transition-colors">
-            illustrate.md
+          <Link href="/" className="flex items-center justify-center gap-2 text-2xl font-bold text-foreground hover:text-primary transition-colors">
+            <LogoMark size={32} />
+            <span>illustrate.md</span>
           </Link>
           <p className="text-muted-foreground mt-2">Sign in to your account</p>
         </div>
