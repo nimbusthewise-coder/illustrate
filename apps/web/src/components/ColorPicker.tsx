@@ -205,14 +205,14 @@ export function ColorPicker() {
           <div className="text-xs text-muted-foreground mb-2">
             Recent Colors
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex flex-wrap gap-1.5">
             {recentColors.map((color, idx) => (
               <ColorSwatch
                 key={`${color}-${idx}`}
                 color={color}
                 onClick={() => handlePresetClick(color)}
                 selected={activeColor === color}
-                size="md"
+                size="sm"
               />
             ))}
           </div>
