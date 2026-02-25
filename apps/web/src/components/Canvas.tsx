@@ -336,7 +336,7 @@ export function Canvas() {
         const start = { row: drawStart.row, col: drawStart.col };
         const end = { row, col };
         const linePoints = getLinePoints(start, end);
-        const lineChar = effectiveTool === 'arrow' ? '→' : LINE_CHARS.horizontal;
+        const lineChar = effectiveTool === 'arrow' ? '→' : LINE_CHARS.HORIZONTAL;
         setDrawPreview(linePoints.map(p => ({ row: p.row, col: p.col, char: lineChar })));
         break;
       }
@@ -357,12 +357,12 @@ export function Canvas() {
           const isRight = p.col === Math.max(start.col, end.col);
           
           let char = ' ';
-          if (isTop && isLeft) char = BOX_CHARS.topLeft;
-          else if (isTop && isRight) char = BOX_CHARS.topRight;
-          else if (isBottom && isLeft) char = BOX_CHARS.bottomLeft;
-          else if (isBottom && isRight) char = BOX_CHARS.bottomRight;
-          else if (isTop || isBottom) char = BOX_CHARS.horizontal;
-          else if (isLeft || isRight) char = BOX_CHARS.vertical;
+          if (isTop && isLeft) char = BOX_CHARS.TOP_LEFT;
+          else if (isTop && isRight) char = BOX_CHARS.TOP_RIGHT;
+          else if (isBottom && isLeft) char = BOX_CHARS.BOTTOM_LEFT;
+          else if (isBottom && isRight) char = BOX_CHARS.BOTTOM_RIGHT;
+          else if (isTop || isBottom) char = BOX_CHARS.HORIZONTAL;
+          else if (isLeft || isRight) char = BOX_CHARS.VERTICAL;
           
           return { row: p.row, col: p.col, char };
         });
