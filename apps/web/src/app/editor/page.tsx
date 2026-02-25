@@ -18,7 +18,7 @@ export default function EditorPage() {
       <header className="flex justify-between items-center px-4 py-3 border-b border-border flex-shrink-0">
         <Link href="/" className="flex items-center gap-2 text-xl font-bold hover:text-primary transition-colors">
           <LogoMark size={24} />
-          <span>illustrate.md</span>
+          <span></span>
         </Link>
         <div className="flex items-center gap-4">
           <ThemeSelector />
