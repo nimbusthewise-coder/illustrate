@@ -60,7 +60,7 @@ export interface LayerState {
   undoStack: OperationDelta[];
   redoStack: OperationDelta[];
 
-  addLayer: (name?: string) => void;
+  addLayer: (name?: string, existingLayer?: Layer) => void;
   renameLayer: (id: string, name: string) => void;
   deleteLayer: (id: string) => boolean;
   setActiveLayer: (id: string) => void;
@@ -99,10 +99,10 @@ export const useLayerStore = create<LayerState>()((set, get) => {
     undoStack: [],
     redoStack: [],
 
-    addLayer: (name?: string) => {
+    addLayer: (name?: string, existingLayer?: Layer) => {
       const state = get();
-      const newName = name ?? `Layer ${state.layers.length + 1}`;
-      const layer = createLayer(newName);
+      // If an existing layer is provided, use it (for flow generation)
+      const layer = existingLayer ?? createLayer(name ?? `Layer ${state.layers.length + 1}`);
       set({
         layers: [...state.layers, layer],
         activeLayerId: layer.id,
