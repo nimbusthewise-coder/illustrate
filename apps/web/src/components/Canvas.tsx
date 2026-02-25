@@ -507,6 +507,14 @@ export function Canvas() {
         break;
       }
 
+      case 'select': {
+        // Update selection rectangle
+        if (selectionStart) {
+          setSelectionEnd({ row, col });
+        }
+        break;
+      }
+
       case 'eraser': {
         // Interpolate from last cell using raw Bresenham (no angle snapping)
         const last = lastCellRef.current;
