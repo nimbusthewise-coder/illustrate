@@ -114,9 +114,9 @@ export default function LandingPage() {
 │       │    UI    │         │  Cache   │         │  Backup  │        │
 │       └──────────┘         └──────────┘         └──────────┘        │
 │                                                                     │
-│                      Create diagrams like this in minutes           │
+│                Create diagrams like this in minutes                 │
 │                                                                     │
-└───────────────────────────────────────────────────────────────────────┘`}</pre>
+└─────────────────────────────────────────────────────────────────────┘`}</pre>
         </div>
       </section>
 
