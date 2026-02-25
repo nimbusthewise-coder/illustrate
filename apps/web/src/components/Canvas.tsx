@@ -469,7 +469,7 @@ export function Canvas() {
           <div
             ref={gridRef}
             data-testid="canvas-grid"
-            className="grid font-mono"
+            className="grid font-mono select-none"
             style={{
               gridTemplateColumns: `repeat(${width}, 1ch)`,
               gridTemplateRows: `repeat(${height}, 1lh)`,
@@ -477,9 +477,25 @@ export function Canvas() {
               fontSize: '14px',
               cursor: currentTool.cursor,
             }}
-            onClick={handleCanvasClick}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
           >
             {cells}
+            {/* Render drawing preview overlay */}
+            {drawPreview.map((p, i) => (
+              <span
+                key={`preview-${i}`}
+                className="absolute pointer-events-none text-primary/70"
+                style={{
+                  gridColumn: p.col + 1,
+                  gridRow: p.row + 1,
+                }}
+              >
+                {p.char}
+              </span>
+            ))}
           </div>
         </div>
       </div>
