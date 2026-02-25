@@ -266,6 +266,16 @@ export function Canvas() {
           e.preventDefault();
           break;
 
+        case ' ':
+          // Space character - handle explicitly to prevent pan tool capture
+          setCell(activeLayerId, row, col, ' ');
+          if (col < width - 1) {
+            setTextCursor({ row, col: col + 1 });
+          }
+          e.preventDefault();
+          e.stopPropagation();
+          break;
+
         default:
           // Type printable characters
           if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
@@ -275,6 +285,7 @@ export function Canvas() {
               setTextCursor({ row, col: col + 1 });
             }
             e.preventDefault();
+            e.stopPropagation();
           }
           break;
       }
