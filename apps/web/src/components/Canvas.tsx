@@ -83,9 +83,10 @@ export function Canvas() {
   const [textCursor, setTextCursor] = useState<{ row: number; col: number } | null>(null);
   const [textStartCol, setTextStartCol] = useState<number>(0); // For Enter key
   
-  // Selection state for drawn content
+  // Selection state for drawn content (synced to store for component creation)
   const [selectionStart, setSelectionStart] = useState<{ row: number; col: number } | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<{ row: number; col: number } | null>(null);
+  const setGlobalSelection = useSelectionStore((s) => s.setSelection);
   
   // Layer mutations
   const setCell = useLayerStore((s) => s.setCell);
@@ -693,9 +694,15 @@ export function Canvas() {
   const handleMouseUp = useCallback(() => {
     if (!isDrawing) return;
 
-    // For select tool, keep the selection visible
+    // For select tool, keep the selection visible and sync to global store
     if (effectiveTool === 'select' && selectionStart && selectionEnd) {
-      // Selection is kept - don't clear it
+      // Sync to global store for CreateComponentDialog
+      setGlobalSelection({
+        startRow: selectionStart.row,
+        startCol: selectionStart.col,
+        endRow: selectionEnd.row,
+        endCol: selectionEnd.col,
+      });
       setIsDrawing(false);
       return;
     }
