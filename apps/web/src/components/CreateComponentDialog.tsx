@@ -6,20 +6,23 @@
 
 import { useState } from 'react';
 import { useComponents } from '@/hooks/useComponents';
-import { CanvasElement } from '@/types/component';
+import { useSelectionStore } from '@/stores/selection-store';
+import { useLayerStore } from '@/stores/layer-store';
 
 interface CreateComponentDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedElements?: CanvasElement[];
 }
 
 export function CreateComponentDialog({
   isOpen,
   onClose,
-  selectedElements = [],
 }: CreateComponentDialogProps) {
   const { addComponent } = useComponents();
+  const selection = useSelectionStore((s) => s.selection);
+  const getSelectedChars = useSelectionStore((s) => s.getSelectedChars);
+  const clearSelection = useSelectionStore((s) => s.clearSelection);
+  const layers = useLayerStore((s) => s.layers);
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -27,13 +30,19 @@ export function CreateComponentDialog({
   const [tags, setTags] = useState('');
   const [error, setError] = useState('');
 
+  // Get selected chars from layers
+  const charGrid = selection ? getSelectedChars(layers) : [];
+  const hasSelection = charGrid.length > 0 && charGrid.some(row => row.some(c => c !== ' '));
+  const selectionWidth = selection ? Math.abs(selection.endCol - selection.startCol) + 1 : 0;
+  const selectionHeight = selection ? Math.abs(selection.endRow - selection.startRow) + 1 : 0;
+
   const handleCreate = () => {
     if (!name.trim()) {
       setError('Please enter a component name');
       return;
     }
 
-    if (selectedElements.length === 0) {
+    if (!hasSelection) {
       setError('No elements selected. Select elements on the canvas first.');
       return;
     }
@@ -41,7 +50,7 @@ export function CreateComponentDialog({
     const result = addComponent({
       name: name.trim(),
       description: description.trim(),
-      elements: selectedElements,
+      charGrid: charGrid,
       category: category.trim() || undefined,
       tags: tags
         .split(',')
@@ -56,6 +65,7 @@ export function CreateComponentDialog({
       setCategory('');
       setTags('');
       setError('');
+      clearSelection();
       onClose();
     } else {
       setError(result.error || 'Failed to create component');
@@ -86,9 +96,10 @@ export function CreateComponentDialog({
         {/* Form */}
         <div className="p-4 space-y-4">
           {/* Selection info */}
-          <div className="p-3 rounded-md bg-info/15 text-info text-sm">
-            {selectedElements.length} element
-            {selectedElements.length !== 1 ? 's' : ''} selected
+          <div className={`p-3 rounded-md text-sm ${hasSelection ? 'bg-info/15 text-info' : 'bg-error/15 text-error'}`}>
+            {hasSelection 
+              ? `${selectionWidth}×${selectionHeight} chars selected`
+              : 'No elements selected. Select elements on the canvas first.'}
           </div>
 
           {/* Name */}
