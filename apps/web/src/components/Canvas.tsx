@@ -291,8 +291,9 @@ export function Canvas() {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    // Use capture phase to get events before other handlers
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [textCursor, effectiveTool, textStartCol, width, height, activeLayerId, setCell]);
 
   // Build a character grid by compositing all visible layers (bottom to top)
