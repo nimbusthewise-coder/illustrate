@@ -78,6 +78,10 @@ export function Canvas() {
   const lastCellRef = useRef<{ row: number; col: number } | null>(null);
   const [drawPreview, setDrawPreview] = useState<Array<{ row: number; col: number; char: string }>>([]);
   
+  // Text editing state
+  const [textCursor, setTextCursor] = useState<{ row: number; col: number } | null>(null);
+  const [textStartCol, setTextStartCol] = useState<number>(0); // For Enter key
+  
   // Layer mutations
   const setCell = useLayerStore((s) => s.setCell);
   const setCells = useLayerStore((s) => s.setCells);
@@ -332,16 +336,9 @@ export function Canvas() {
       }
 
       case 'text': {
-        // Text tool: prompt for text and place it starting at click position
-        const text = window.prompt('Enter text:');
-        if (text) {
-          const cells = text.split('').map((char, i) => ({
-            row,
-            col: col + i,
-            char,
-          })).filter(c => c.col < width); // Stay in bounds
-          setCells(activeLayerId, cells);
-        }
+        // Text tool: place cursor for typing
+        setTextCursor({ row, col });
+        setTextStartCol(col);
         break;
       }
 
