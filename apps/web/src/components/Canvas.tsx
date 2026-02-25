@@ -897,7 +897,7 @@ export function Canvas() {
       default:
         break;
     }
-  }, [isDrawing, effectiveTool, drawStart, activeLayerId, setCell, getCellFromEvent, draggingInstanceId, dragOffset, moveInstance, isDraggingSelection, selectionOriginalBounds, selectionDragOffset]);
+  }, [isDrawing, effectiveTool, drawStart, activeLayerId, setCell, getCellFromEvent, draggingInstanceId, dragOffset, moveInstance, isDraggingSelection, selectionOriginalBounds, selectionDragOffset, selectionContent]);
 
   // Handle mouse up — commit shape drawing
   const handleMouseUp = useCallback(() => {
@@ -951,6 +951,7 @@ export function Canvas() {
       setIsDraggingSelection(false);
       setSelectionContent([]);
       setSelectionOriginalBounds(null);
+      setDrawPreview([]);
       return;
     }
 
