@@ -1067,9 +1067,9 @@ export function Canvas() {
   }
 
   return (
-    <div className="flex flex-col w-full h-full">
-      {/* F003: Zoom Controls */}
-      <div className="flex-shrink-0 p-2 bg-background/80 backdrop-blur-sm border-b border-border">
+    <div className="relative w-full h-full">
+      {/* F003: Zoom Controls - floating in top-left */}
+      <div className="absolute top-2 left-2 z-10">
         <ZoomControls
           zoomPercent={zoomPercent}
           onZoomIn={zoomIn}
