@@ -882,6 +882,53 @@ export function Canvas() {
       setDraggingInstanceId(null);
       return;
     }
+    
+    // Commit selection move
+    if (isDraggingSelection && selectionOriginalBounds && selectionContent.length > 0 && selectionStart) {
+      // Calculate where content should be placed
+      const newMinRow = selectionStart.row;
+      const newMinCol = selectionStart.col;
+      
+      // Erase from original position
+      const eraseCells: Array<{ row: number; col: number; char: string }> = [];
+      for (const item of selectionContent) {
+        eraseCells.push({
+          row: selectionOriginalBounds.minRow + item.row,
+          col: selectionOriginalBounds.minCol + item.col,
+          char: ' ',
+        });
+      }
+      
+      // Place at new position
+      const placeCells: Array<{ row: number; col: number; char: string }> = [];
+      for (const item of selectionContent) {
+        placeCells.push({
+          row: newMinRow + item.row,
+          col: newMinCol + item.col,
+          char: item.char,
+        });
+      }
+      
+      // Apply both as one undoable operation
+      setCellsWithUndo(activeLayerId, [...eraseCells, ...placeCells]);
+      
+      // Update selection to new position
+      const height = selectionOriginalBounds.maxRow - selectionOriginalBounds.minRow;
+      const width = selectionOriginalBounds.maxCol - selectionOriginalBounds.minCol;
+      setSelectionEnd({ row: newMinRow + height, col: newMinCol + width });
+      setGlobalSelection({
+        startRow: newMinRow,
+        startCol: newMinCol,
+        endRow: newMinRow + height,
+        endCol: newMinCol + width,
+      });
+      
+      // Reset drag state
+      setIsDraggingSelection(false);
+      setSelectionContent([]);
+      setSelectionOriginalBounds(null);
+      return;
+    }
 
     if (!isDrawing) return;
 
