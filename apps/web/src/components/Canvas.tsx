@@ -83,6 +83,8 @@ export function Canvas() {
   const setCells = useLayerStore((s) => s.setCells);
   const getLayer = useLayerStore((s) => s.getLayer);
   const isLayerLocked = useLayerStore((s) => s.isLayerLocked);
+  // Subscribe to layer data changes for live rendering
+  const layers = useLayerStore((s) => s.layers);
   
   // Fill tool
   const { applyFill, previewFill, clearPreview } = useFillTool();
@@ -203,7 +205,7 @@ export function Canvas() {
   ], { scope: 'canvas' });
 
   // Build a character grid from layer buffer + component instances
-  const activeLayer = getLayer(activeLayerId);
+  const activeLayer = layers.find(l => l.id === activeLayerId);
   
   const grid = useMemo(() => {
     // Initialize from layer buffer if available, otherwise empty
@@ -227,7 +229,7 @@ export function Canvas() {
     }
 
     return cells;
-  }, [width, height, instances, getComponent, activeLayer]);
+  }, [width, height, instances, getComponent, activeLayer, layers]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
