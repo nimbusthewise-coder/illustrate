@@ -16,6 +16,37 @@ import { renderComponentToGrid } from '@/utils/componentRenderer';
 import { getLinePoints, getBoxPoints, BOX_CHARS, LINE_CHARS } from '@illustrate.md/core';
 
 /**
+ * Bresenham's line algorithm — returns all points between (x0,y0) and (x1,y1)
+ * Unlike getLinePoints, this doesn't snap to angles — follows exact path.
+ */
+function bresenhamLine(x0: number, y0: number, x1: number, y1: number): Array<{ x: number; y: number }> {
+  const points: Array<{ x: number; y: number }> = [];
+  const dx = Math.abs(x1 - x0);
+  const dy = Math.abs(y1 - y0);
+  const sx = x0 < x1 ? 1 : -1;
+  const sy = y0 < y1 ? 1 : -1;
+  let err = dx - dy;
+
+  let x = x0;
+  let y = y0;
+
+  while (true) {
+    points.push({ x, y });
+    if (x === x1 && y === y1) break;
+    const e2 = 2 * err;
+    if (e2 > -dy) {
+      err -= dy;
+      x += sx;
+    }
+    if (e2 < dx) {
+      err += dx;
+      y += sy;
+    }
+  }
+  return points;
+}
+
+/**
  * Canvas — renders a character grid at the configured dimensions.
  * F010: Integrated with tool selection system for different interaction modes.
  * F021: Supports dropping components from the library to place instances.
@@ -332,10 +363,10 @@ export function Canvas() {
     switch (effectiveTool) {
       case 'pen':
       case 'text': {
-        // Interpolate from last cell to fill gaps on fast drag
+        // Interpolate from last cell using raw Bresenham (no angle snapping)
         if (lastCell && (lastCell.row !== row || lastCell.col !== col)) {
-          const points = getLinePoints(lastCell, { row, col });
-          const cells = points.map(p => ({ row: p.row, col: p.col, char: '█' }));
+          const points = bresenhamLine(lastCell.col, lastCell.row, col, row);
+          const cells = points.map(p => ({ row: p.y, col: p.x, char: '█' }));
           setCells(activeLayerId, cells);
         } else {
           setCell(activeLayerId, row, col, '█');
@@ -345,10 +376,10 @@ export function Canvas() {
       }
 
       case 'eraser': {
-        // Interpolate from last cell to fill gaps on fast drag
+        // Interpolate from last cell using raw Bresenham (no angle snapping)
         if (lastCell && (lastCell.row !== row || lastCell.col !== col)) {
-          const points = getLinePoints(lastCell, { row, col });
-          const cells = points.map(p => ({ row: p.row, col: p.col, char: ' ' }));
+          const points = bresenhamLine(lastCell.col, lastCell.row, col, row);
+          const cells = points.map(p => ({ row: p.y, col: p.x, char: ' ' }));
           setCells(activeLayerId, cells);
         } else {
           setCell(activeLayerId, row, col, ' ');
