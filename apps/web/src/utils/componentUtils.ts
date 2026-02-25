@@ -108,7 +108,7 @@ export function validateComponentName(
  */
 export function validateComponentElements(
   elements: CanvasElement[],
-  charGrid?: string[],
+  charGrid?: string[][],
 ): ValidationResult {
   const errors: string[] = [];
 
