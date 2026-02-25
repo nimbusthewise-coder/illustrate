@@ -10,6 +10,54 @@ npm install -g @illustrate.md/cli
 
 ## Commands
 
+### `generate` - Generate Diagram from Prompt (F061)
+
+Generate flow diagrams from natural language prompts using AI.
+
+```bash
+# Basic generation
+illustrate generate "user login flow with email and password"
+
+# Save to file
+illustrate generate "checkout process" --out checkout.illustrate
+
+# Interactive mode with refinement
+illustrate generate --interactive
+
+# Use specific design system
+illustrate generate "dashboard layout" --design-system mondrian
+
+# Custom dimensions
+illustrate generate "system architecture" --width 120 --height 60
+
+# Save as ASCII text
+illustrate generate "api workflow" --out api.txt --format ascii
+
+# Verbose mode
+illustrate generate "complex workflow" --verbose
+```
+
+**Options:**
+- `--design-system <name>` - Design system to use (default: standard)
+- `-w, --width <number>` - Canvas width in characters (default: 80)
+- `-h, --height <number>` - Canvas height in characters (default: 40)
+- `-t, --title <title>` - Custom diagram title
+- `-o, --out <file>` - Save to file
+- `--format <format>` - Output format: illustrate, ascii, markdown (default: illustrate)
+- `-i, --interactive` - Interactive mode with prompt refinement
+- `--no-display` - Don't display in terminal (save to file only)
+- `--no-color` - Disable ANSI colors in terminal output
+- `--no-border` - Disable border in terminal output
+- `-q, --quiet` - Suppress non-error output
+- `-v, --verbose` - Show detailed progress and metadata
+
+**Available Design Systems:**
+standard, dieter, warhol, moebius, peanuts, bass, albers, mondrian, ghibli, kare, klein, morris, vignelli, hockney
+
+**See:** [Full Generate Command Documentation](docs/GENERATE_COMMAND.md)
+
+---
+
 ### `export` - Export Diagram as Plain ASCII
 
 Export a diagram to plain ASCII text (suitable for piping).

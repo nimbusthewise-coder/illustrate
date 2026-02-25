@@ -13,6 +13,7 @@ import { copyCommand } from './commands/copy.js';
 import { renderCommand } from './commands/render.js';
 import { createCommand, listCommand, validateCommand, infoCommand } from './commands/file.js';
 import { showCommand } from './commands/show.js';
+import { generateCommand } from './commands/generate.js';
 
 const program = new Command();
 
@@ -20,6 +21,24 @@ program
   .name('illustrate')
   .description('Command-line interface for illustrate.md')
   .version('0.1.0');
+
+// F061: CLI Prompt-to-Flow Generation
+program
+  .command('generate [prompt]')
+  .description('Generate flow diagram from text prompt using AI (F061)')
+  .option('--design-system <name>', 'Design system to use (default: standard)')
+  .option('-w, --width <number>', 'Canvas width in characters (default: 80)', parseInt)
+  .option('-h, --height <number>', 'Canvas height in characters (default: 40)', parseInt)
+  .option('-t, --title <title>', 'Diagram title')
+  .option('-o, --out <file>', 'Save to file')
+  .option('--format <format>', 'Output format: illustrate, ascii, markdown (default: illustrate)')
+  .option('-i, --interactive', 'Interactive mode with prompt refinement')
+  .option('--no-display', 'Don\'t display in terminal (save to file only)')
+  .option('--no-color', 'Disable ANSI colors in terminal output')
+  .option('--no-border', 'Disable border in terminal output')
+  .option('-q, --quiet', 'Suppress non-error output')
+  .option('-v, --verbose', 'Show detailed progress and metadata')
+  .action(generateCommand);
 
 // F062: Pipe ASCII to stdout
 // F042: Markdown code block export

@@ -185,7 +185,7 @@ export function GenerationPreview({ className = '' }: GenerationPreviewProps) {
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-border">
           <button
             onClick={reject}
             className="px-6 py-2
@@ -197,17 +197,34 @@ export function GenerationPreview({ className = '' }: GenerationPreviewProps) {
           >
             Cancel
           </button>
-          <button
-            onClick={accept}
-            className="px-6 py-2
-                       bg-primary text-primary-foreground
-                       rounded-lg font-medium
-                       hover:opacity-90
-                       focus:outline-none focus:ring-2 focus:ring-primary/50
-                       transition-all"
-          >
-            Add to Canvas
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                // This will be handled by the parent component
+                const event = new CustomEvent('openRefinement');
+                window.dispatchEvent(event);
+              }}
+              className="px-6 py-2
+                         bg-secondary text-secondary-foreground
+                         rounded-lg font-medium
+                         hover:bg-accent
+                         focus:outline-none focus:ring-2 focus:ring-primary/50
+                         transition-all"
+            >
+              Refine with AI
+            </button>
+            <button
+              onClick={accept}
+              className="px-6 py-2
+                         bg-primary text-primary-foreground
+                         rounded-lg font-medium
+                         hover:opacity-90
+                         focus:outline-none focus:ring-2 focus:ring-primary/50
+                         transition-all"
+            >
+              Add to Canvas
+            </button>
+          </div>
         </div>
       </div>
     </div>

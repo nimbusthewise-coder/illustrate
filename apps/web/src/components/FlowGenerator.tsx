@@ -1,18 +1,23 @@
 /**
  * Flow Generator Component
  * F026: Prompt-to-Flow Generation
+ * F027: Iterative Refinement via Follow-up Prompts
  * 
  * Main interface for prompt-to-flow generation.
  * Combines prompt input, status display, preview, and provider settings.
+ * Includes conversation panel for refinement.
  */
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PromptInput, ExamplePrompts } from './PromptInput';
 import { GenerationPreview, GenerationStatus } from './GenerationPreview';
+import { ConversationPanel } from './ConversationPanel';
+import { ChangePreview } from './ChangePreview';
 import { useFlowGeneration } from '@/hooks/useFlowGeneration';
 import { useGenerationStore } from '@/stores/generationStore';
+import { useConversationStore } from '@/stores/conversationStore';
 import { storeProvider, clearProvider } from '@/services/llmService';
 import type { LLMProvider } from '@/types/prompt';
 
@@ -25,7 +30,29 @@ export interface FlowGeneratorProps {
 export function FlowGenerator({ isOpen, onClose, className = '' }: FlowGeneratorProps) {
   const { setPrompt, error } = useFlowGeneration();
   const generationStore = useGenerationStore();
+  const conversationStore = useConversationStore();
   const [showProviderSettings, setShowProviderSettings] = useState(false);
+  const [showConversation, setShowConversation] = useState(false);
+
+  // Listen for refinement button click
+  useEffect(() => {
+    const handleOpenRefinement = () => {
+      // Create or get conversation thread
+      if (!conversationStore.currentThread) {
+        conversationStore.createThread('Refining generated flow');
+      }
+      // Update current flow in conversation
+      if (generationStore.activeGeneration) {
+        conversationStore.updateCurrentFlow(generationStore.activeGeneration);
+      }
+      setShowConversation(true);
+    };
+
+    window.addEventListener('openRefinement', handleOpenRefinement);
+    return () => {
+      window.removeEventListener('openRefinement', handleOpenRefinement);
+    };
+  }, [conversationStore, generationStore.activeGeneration]);
 
   if (!isOpen) {
     return null;
@@ -98,6 +125,15 @@ export function FlowGenerator({ isOpen, onClose, className = '' }: FlowGenerator
 
       {/* Preview Modal (renders independently) */}
       <GenerationPreview />
+
+      {/* Conversation Panel for refinement */}
+      <ConversationPanel
+        isOpen={showConversation}
+        onClose={() => setShowConversation(false)}
+      />
+
+      {/* Change Preview Modal */}
+      <ChangePreview />
     </>
   );
 }
