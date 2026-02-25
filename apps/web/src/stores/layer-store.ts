@@ -31,6 +31,38 @@ export function createBuffer(width: number, height: number): Buffer {
   };
 }
 
+/**
+ * Resize a buffer to new dimensions, preserving existing content
+ */
+export function resizeBuffer(buffer: Buffer, newWidth: number, newHeight: number): Buffer {
+  const newSize = newWidth * newHeight;
+  const newChars = new Array(newSize).fill(' ');
+  const newFg = new Array(newSize).fill('#ffffff');
+  const newBg = new Array(newSize).fill('transparent');
+  const newFlags = new Array(newSize).fill(0);
+
+  // Copy existing content at correct row/col positions
+  for (let row = 0; row < Math.min(buffer.height, newHeight); row++) {
+    for (let col = 0; col < Math.min(buffer.width, newWidth); col++) {
+      const oldIdx = row * buffer.width + col;
+      const newIdx = row * newWidth + col;
+      newChars[newIdx] = buffer.chars[oldIdx];
+      newFg[newIdx] = buffer.fg[oldIdx];
+      newBg[newIdx] = buffer.bg[oldIdx];
+      newFlags[newIdx] = buffer.flags[oldIdx];
+    }
+  }
+
+  return {
+    width: newWidth,
+    height: newHeight,
+    chars: newChars,
+    fg: newFg,
+    bg: newBg,
+    flags: newFlags,
+  };
+}
+
 export function createLayer(name: string, id?: string): Layer {
   const { width, height } = useCanvasStore.getState();
   return {
