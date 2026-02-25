@@ -33,27 +33,19 @@ export function ComponentPreview({
         minHeight: '40px',
       }}
     >
-      <div
-        className="grid font-mono text-xs"
+      <pre
+        className="font-mono text-xs whitespace-pre p-1"
         style={{
-          gridTemplateColumns: `repeat(${boundingBox.width}, 1ch)`,
-          gridTemplateRows: `repeat(${boundingBox.height}, 1lh)`,
           lineHeight: '1.25',
           fontSize: `${14 * scale}px`,
         }}
       >
-        {/* Render empty cells for now - actual element rendering will be added later */}
-        {Array.from({ length: boundingBox.height }).map((_, row) =>
-          Array.from({ length: boundingBox.width }).map((_, col) => (
-            <span
-              key={`${row}-${col}`}
-              className="select-none text-center leading-none"
-            >
-              {'\u00A0'}
-            </span>
-          )),
-        )}
-      </div>
+        {component.charGrid && component.charGrid.length > 0
+          ? component.charGrid.map(row => row.join('')).join('\n')
+          : Array.from({ length: boundingBox.height })
+              .map(() => '\u00A0'.repeat(boundingBox.width))
+              .join('\n')}
+      </pre>
     </div>
   );
 }
