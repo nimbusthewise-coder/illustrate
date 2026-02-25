@@ -40,7 +40,20 @@ export function Canvas() {
   const { getComponent } = useComponents();
   const gridRef = useRef<HTMLDivElement>(null);
   
+  // Drawing state
   const [dragOver, setDragOver] = useState(false);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [drawStart, setDrawStart] = useState<{ row: number; col: number } | null>(null);
+  const [drawPreview, setDrawPreview] = useState<Array<{ row: number; col: number; char: string }>>([]);
+  
+  // Layer mutations
+  const setCell = useLayerStore((s) => s.setCell);
+  const setCells = useLayerStore((s) => s.setCells);
+  const getLayer = useLayerStore((s) => s.getLayer);
+  const isLayerLocked = useLayerStore((s) => s.isLayerLocked);
+  
+  // Fill tool
+  const { applyFill, previewFill, clearPreview } = useFillTool();
   
   // F010: Get current tool and apply tool-specific cursor
   const { effectiveTool } = useToolSelection();
@@ -208,16 +221,10 @@ export function Canvas() {
     }
   };
 
-  const handleCanvasClick = (e: React.MouseEvent) => {
-    // F010: Only handle selection with select tool
-    if (effectiveTool !== 'select') {
-      // TODO: Handle other tool interactions (pen, line, rectangle, etc.)
-      return;
-    }
-
-    // Get click position relative to grid
+  // Helper to get cell coordinates from mouse event
+  const getCellFromEvent = useCallback((e: React.MouseEvent): { row: number; col: number } | null => {
     const gridRect = gridRef.current?.getBoundingClientRect();
-    if (!gridRect) return;
+    if (!gridRect) return null;
 
     const cellWidth = gridRect.width / width;
     const cellHeight = gridRect.height / height;
@@ -225,28 +232,166 @@ export function Canvas() {
     const col = Math.floor((e.clientX - gridRect.left) / cellWidth);
     const row = Math.floor((e.clientY - gridRect.top) / cellHeight);
 
-    // Find if any instance occupies this cell
-    let clickedInstanceId: string | null = null;
-    
-    for (const instance of instances) {
-      const component = getComponent(instance.componentId);
-      if (!component) continue;
+    if (col >= 0 && col < width && row >= 0 && row < height) {
+      return { row, col };
+    }
+    return null;
+  }, [width, height]);
 
-      const { boundingBox } = component;
-      
-      // Check if click is within instance bounds
-      if (
-        col >= instance.x &&
-        col < instance.x + boundingBox.width &&
-        row >= instance.y &&
-        row < instance.y + boundingBox.height
-      ) {
-        clickedInstanceId = instance.id;
+  // Handle mouse down — start drawing or select
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    const cell = getCellFromEvent(e);
+    if (!cell) return;
+
+    // Check if layer is locked
+    if (isLayerLocked(activeLayerId)) return;
+
+    const { row, col } = cell;
+
+    switch (effectiveTool) {
+      case 'select': {
+        // Find if any instance occupies this cell
+        let clickedInstanceId: string | null = null;
+        for (const instance of instances) {
+          const component = getComponent(instance.componentId);
+          if (!component) continue;
+          const { boundingBox } = component;
+          if (
+            col >= instance.x &&
+            col < instance.x + boundingBox.width &&
+            row >= instance.y &&
+            row < instance.y + boundingBox.height
+          ) {
+            clickedInstanceId = instance.id;
+            break;
+          }
+        }
+        selectInstance(clickedInstanceId);
         break;
       }
+
+      case 'pen':
+      case 'text': {
+        // Single character drawing
+        setCell(activeLayerId, row, col, '█');
+        setIsDrawing(true);
+        break;
+      }
+
+      case 'eraser': {
+        // Erase character
+        setCell(activeLayerId, row, col, ' ');
+        setIsDrawing(true);
+        break;
+      }
+
+      case 'fill': {
+        // Flood fill at click position
+        applyFill(row, col);
+        break;
+      }
+
+      case 'line':
+      case 'rectangle':
+      case 'box':
+      case 'ellipse':
+      case 'arrow': {
+        // Start shape drawing
+        setIsDrawing(true);
+        setDrawStart({ row, col });
+        setDrawPreview([]);
+        break;
+      }
+
+      default:
+        break;
+    }
+  }, [effectiveTool, activeLayerId, instances, getComponent, selectInstance, setCell, applyFill, isLayerLocked, getCellFromEvent]);
+
+  // Handle mouse move — continue drawing or update preview
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDrawing) return;
+
+    const cell = getCellFromEvent(e);
+    if (!cell) return;
+
+    const { row, col } = cell;
+
+    switch (effectiveTool) {
+      case 'pen':
+      case 'text': {
+        setCell(activeLayerId, row, col, '█');
+        break;
+      }
+
+      case 'eraser': {
+        setCell(activeLayerId, row, col, ' ');
+        break;
+      }
+
+      case 'line':
+      case 'arrow': {
+        if (!drawStart) return;
+        // Preview line
+        const lineChars = drawLine(drawStart.col, drawStart.row, col, row);
+        setDrawPreview(lineChars.map(c => ({ row: c.y, col: c.x, char: effectiveTool === 'arrow' ? '-' : '─' })));
+        break;
+      }
+
+      case 'rectangle':
+      case 'box': {
+        if (!drawStart) return;
+        // Preview rectangle
+        const rectChars = drawRectangle(
+          Math.min(drawStart.col, col),
+          Math.min(drawStart.row, row),
+          Math.abs(col - drawStart.col) + 1,
+          Math.abs(row - drawStart.row) + 1
+        );
+        setDrawPreview(rectChars.map(c => ({ row: c.y, col: c.x, char: c.char })));
+        break;
+      }
+
+      case 'ellipse': {
+        if (!drawStart) return;
+        // Preview ellipse
+        const ellipseChars = drawEllipse(
+          Math.min(drawStart.col, col),
+          Math.min(drawStart.row, row),
+          Math.abs(col - drawStart.col) + 1,
+          Math.abs(row - drawStart.row) + 1
+        );
+        setDrawPreview(ellipseChars.map(c => ({ row: c.y, col: c.x, char: c.char })));
+        break;
+      }
+
+      default:
+        break;
+    }
+  }, [isDrawing, effectiveTool, drawStart, activeLayerId, setCell, getCellFromEvent]);
+
+  // Handle mouse up — commit shape drawing
+  const handleMouseUp = useCallback(() => {
+    if (!isDrawing) return;
+
+    // Commit preview to canvas
+    if (drawPreview.length > 0) {
+      const cells = drawPreview.map(p => ({
+        row: p.row,
+        col: p.col,
+        char: p.char,
+      }));
+      setCells(activeLayerId, cells);
     }
 
-    selectInstance(clickedInstanceId);
+    setIsDrawing(false);
+    setDrawStart(null);
+    setDrawPreview([]);
+  }, [isDrawing, drawPreview, activeLayerId, setCells]);
+
+  // Legacy click handler (kept for component selection)
+  const handleCanvasClick = (e: React.MouseEvent) => {
+    // Now handled by mousedown
   };
 
   // Build cells from the rendered grid with selection highlighting
