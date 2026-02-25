@@ -25,7 +25,7 @@ export default function LandingPage() {
             <span className="text-xl font-bold text-foreground"></span>
           </Link>
           <div className="flex items-center gap-4">
-            <ThemeSelector />
+            {/*<ThemeSelector />*/}
             {user ? (
               <Link
                 href="/editor"
