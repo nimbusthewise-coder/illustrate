@@ -5,17 +5,18 @@
  */
 
 export type ToolType = 
-  | 'select'    // Selection/move tool
-  | 'pen'       // Drawing/text tool
-  | 'text'      // Alias for pen (text entry)
-  | 'line'      // Line drawing tool
-  | 'rectangle' // Rectangle shape tool
+  | 'select'    // Marquee/rectangle selection (M)
+  | 'move'      // Move selection or elements (V)
+  | 'pen'       // Drawing/brush tool (B)
+  | 'text'      // Text tool (T)
+  | 'line'      // Line drawing tool (L)
+  | 'rectangle' // Rectangle shape tool (U)
   | 'box'       // Alias for rectangle
   | 'ellipse'   // Ellipse/circle tool
   | 'arrow'     // Arrow/connector tool
-  | 'fill'      // Fill tool
-  | 'eraser'    // Erase tool
-  | 'pan';      // Pan/hand tool
+  | 'fill'      // Fill tool (G)
+  | 'eraser'    // Erase tool (E)
+  | 'pan';      // Pan/hand tool (Space)
 
 export interface Tool {
   type: ToolType;
