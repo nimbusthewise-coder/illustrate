@@ -353,8 +353,8 @@ export default function LandingPage() {
       <section className="py-20 px-4">
         <div className="max-w-2xl mx-auto text-center">
           <pre className="text-primary text-xs mb-8 inline-block">{`┌─────────────────────────────────┐
-│   Ready to start drawing?       │
-└─────────────────────────────────┘`}</pre>
+│   Ready to start drawing?   │
+└─────────────────────────────┘`}</pre>
           
           <p className="text-muted-foreground mb-8">
             Create your first ASCII diagram in seconds. No credit card required.
@@ -372,8 +372,6 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-border py-8 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-6">
-          </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <p>© 2026 illustrate.md</p>
             <div className="flex items-center gap-6">
