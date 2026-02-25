@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth-store';
 import { ThemeSelector } from '@/components/ThemeSelector';
+import { LogoMark } from '@/components/icons';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -21,7 +22,10 @@ export default function LandingPage() {
       {/* Header */}
       <header className="border-b border-border">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">illustrate.md</h1>
+          <div className="flex items-center gap-2">
+            <LogoMark size={28} />
+            <span className="text-xl font-bold text-foreground">illustrate.md</span>
+          </div>
           <div className="flex items-center gap-4">
             <ThemeSelector />
             {user ? (
