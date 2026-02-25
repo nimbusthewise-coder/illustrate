@@ -14,6 +14,12 @@ import {
   extractUniqueTags,
 } from '@/utils/diagramUtils';
 import type { Layer } from '@/lib/types';
+import {
+  fetchUserDiagrams,
+  saveDiagramToCloud,
+  deleteDiagramFromCloud,
+  syncDiagrams,
+} from '@/lib/diagram-sync';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -101,6 +107,12 @@ export interface DiagramState {
   // Persistence
   _loadFromStorage: () => void;
   _saveToStorage: () => void;
+
+  // Cloud sync
+  isSyncing: boolean;
+  lastSyncedAt: number | null;
+  syncWithCloud: () => Promise<void>;
+  loadFromCloud: () => Promise<void>;
 }
 
 // ─── Defaults ────────────────────────────────────────────────────────
@@ -180,6 +192,8 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
   selectedDiagramId: null,
   isModalOpen: false,
   modalMode: 'view',
+  isSyncing: false,
+  lastSyncedAt: null,
 
   saveDiagram: ({ name, description = '', tags = [], width, height, layers }) => {
     const now = Date.now();
@@ -412,5 +426,51 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
 
   _saveToStorage: () => {
     saveDiagramsToStorage(get().diagrams);
+  },
+
+  // Cloud sync
+  syncWithCloud: async () => {
+    if (get().isSyncing) return;
+    
+    set({ isSyncing: true });
+    try {
+      const localDiagrams = get().diagrams;
+      const merged = await syncDiagrams(localDiagrams);
+      
+      set({ 
+        diagrams: merged, 
+        lastSyncedAt: Date.now(),
+        isSyncing: false,
+      });
+      
+      // Also update localStorage
+      saveDiagramsToStorage(merged);
+    } catch (error) {
+      console.error('Sync failed:', error);
+      set({ isSyncing: false });
+    }
+  },
+
+  loadFromCloud: async () => {
+    if (get().isSyncing) return;
+    
+    set({ isSyncing: true });
+    try {
+      const cloudDiagrams = await fetchUserDiagrams();
+      
+      if (cloudDiagrams.length > 0) {
+        set({ 
+          diagrams: cloudDiagrams,
+          lastSyncedAt: Date.now(),
+          isSyncing: false,
+        });
+        saveDiagramsToStorage(cloudDiagrams);
+      } else {
+        set({ isSyncing: false });
+      }
+    } catch (error) {
+      console.error('Load from cloud failed:', error);
+      set({ isSyncing: false });
+    }
   },
 }));
