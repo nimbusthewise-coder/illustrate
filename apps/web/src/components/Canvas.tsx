@@ -208,6 +208,82 @@ export function Canvas() {
     },
   ], { scope: 'canvas' });
 
+  // Text editing keyboard handler
+  useEffect(() => {
+    if (!textCursor || effectiveTool !== 'text') {
+      return;
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle if typing in an input field
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      const { row, col } = textCursor;
+
+      switch (e.key) {
+        case 'Escape':
+          // Exit text mode
+          setTextCursor(null);
+          e.preventDefault();
+          break;
+
+        case 'ArrowUp':
+          if (row > 0) setTextCursor({ row: row - 1, col });
+          e.preventDefault();
+          break;
+
+        case 'ArrowDown':
+          if (row < height - 1) setTextCursor({ row: row + 1, col });
+          e.preventDefault();
+          break;
+
+        case 'ArrowLeft':
+          if (col > 0) setTextCursor({ row, col: col - 1 });
+          e.preventDefault();
+          break;
+
+        case 'ArrowRight':
+          if (col < width - 1) setTextCursor({ row, col: col + 1 });
+          e.preventDefault();
+          break;
+
+        case 'Enter':
+          // Move down, back to start column
+          if (row < height - 1) {
+            setTextCursor({ row: row + 1, col: textStartCol });
+          }
+          e.preventDefault();
+          break;
+
+        case 'Backspace':
+          // Move left and clear
+          if (col > 0) {
+            setCell(activeLayerId, row, col - 1, ' ');
+            setTextCursor({ row, col: col - 1 });
+          }
+          e.preventDefault();
+          break;
+
+        default:
+          // Type printable characters
+          if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+            setCell(activeLayerId, row, col, e.key);
+            // Move cursor right
+            if (col < width - 1) {
+              setTextCursor({ row, col: col + 1 });
+            }
+            e.preventDefault();
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [textCursor, effectiveTool, textStartCol, width, height, activeLayerId, setCell]);
+
   // Build a character grid by compositing all visible layers (bottom to top)
   const activeLayer = layers.find(l => l.id === activeLayerId);
   
@@ -307,6 +383,8 @@ export function Canvas() {
 
     switch (effectiveTool) {
       case 'select': {
+        // Clear text cursor when switching to select
+        setTextCursor(null);
         // Find if any instance occupies this cell
         let clickedInstanceId: string | null = null;
         for (const instance of instances) {
@@ -633,6 +711,7 @@ export function Canvas() {
       const char = previewChar || grid[row][col];
       const isSelected = selectedCells.has(cellKey);
       const isPreview = !!previewChar;
+      const isTextCursor = textCursor?.row === row && textCursor?.col === col;
       
       cells.push(
         <span
@@ -641,7 +720,9 @@ export function Canvas() {
           data-col={col}
           className={`select-none text-center leading-none ${
             isSelected ? 'bg-primary/20' : ''
-          } ${isPreview ? 'text-primary/70' : ''}`}
+          } ${isPreview ? 'text-primary/70' : ''} ${
+            isTextCursor ? 'bg-primary text-primary-foreground animate-pulse' : ''
+          }`}
         >
           {char}
         </span>,
