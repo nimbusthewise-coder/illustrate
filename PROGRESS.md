@@ -33,6 +33,8 @@
 | R002 | ColorPicker | 🟡 Minor | Hydration mismatch — `hexInput` initialized empty, then set via useEffect. Also browser extension interference (`data-np-*` attrs) | Open |
 | R003 | Layers | ⚪ Untested | Layer functionality not yet verified | Open |
 | R014 | Layers | 🟡 Medium | Only active layer visible — grid wasn't compositing all layers | ✅ Fixed |
+| R015 | Box | 🟡 Medium | Preview not visible during drag — overlay CSS broken in grid | ✅ Fixed |
+| R016 | Line | 🟡 Medium | Line always used ─ instead of direction-appropriate chars | ✅ Fixed |
 | R004 | Components | ⚪ Untested | Component library drag-drop not yet verified | Open |
 | R005 | Export | ⚪ Untested | Markdown/SVG export not yet verified | Open |
 | R006 | Persistence | ⚪ Untested | Cloud save/load not yet verified | Open |
