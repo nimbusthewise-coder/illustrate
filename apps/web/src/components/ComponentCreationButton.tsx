@@ -6,13 +6,9 @@
 
 import { useState } from 'react';
 import { CreateComponentDialog } from './CreateComponentDialog';
-import { CanvasElement } from '@/types/component';
 
 export function ComponentCreationButton() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  // Placeholder: In a real implementation, this would get selected elements from canvas
-  const selectedElements: CanvasElement[] = [];
 
   return (
     <>
@@ -27,7 +23,6 @@ export function ComponentCreationButton() {
       <CreateComponentDialog
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        selectedElements={selectedElements}
       />
     </>
   );
