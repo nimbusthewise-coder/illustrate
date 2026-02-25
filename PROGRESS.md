@@ -6,12 +6,53 @@
 
 | Metric | Value |
 |--------|-------|
-| Active Phase | P1 |
+| Active Phase | **REVIEW** |
 | Total Cards | 64 |
-| Shipped | 15 |
+| Shipped | 64 |
 | Building | 0 |
-| Queued | 49 |
+| Queued | 0 |
 | Started | 2026-02-24 |
+| Completed | 2026-02-25 |
+
+---
+
+## 🔍 Post-Build Review (2026-02-25)
+
+> Manual review session with JP to validate factory output before release.
+
+### Review Findings
+
+| ID | Area | Severity | Issue | Status |
+|----|------|----------|-------|--------|
+| R001 | Canvas | 🔴 Critical | Drawing tools not wired up — Canvas.tsx returns early with TODO on line 198 for non-select tools | Open |
+| R002 | ColorPicker | 🟡 Minor | Hydration mismatch — `hexInput` initialized empty, then set via useEffect. Also browser extension interference (`data-np-*` attrs) | Open |
+| R003 | Layers | ⚪ Untested | Layer functionality not yet verified | Open |
+| R004 | Components | ⚪ Untested | Component library drag-drop not yet verified | Open |
+| R005 | Export | ⚪ Untested | Markdown/SVG export not yet verified | Open |
+| R006 | Persistence | ⚪ Untested | Cloud save/load not yet verified | Open |
+| R007 | Themes | ✅ Working | Theme selector works, Dieter Rams theme renders correctly | Verified |
+| R008 | Zoom | ⚪ Untested | Zoom controls present but not tested | Open |
+
+### Architecture Notes
+
+**What exists but isn't wired up (R001):**
+```
+✅ tool-store.ts — tracks activeTool, temporaryTool, fillCharacter
+✅ useFillTool.ts — applyFill(), previewFill() with undo/redo
+✅ layer-store.ts — setCells() for canvas mutations  
+✅ @illustrate.md/core — floodFill(), canFill() algorithms
+❌ Canvas.tsx line 198 — returns early instead of calling these
+```
+
+**Fix needed:** Wire mouse events to tool hooks (~50 lines)
+
+### Review Session Log
+
+- **14:00** — App loads, hydration warning in console (R002)
+- **14:01** — Tools render but drawing doesn't work (R001)
+- **14:05** — Root cause identified: Canvas.tsx TODO placeholder
+
+---
 
 ### Cards by Phase
 - **P0:** 28 cards
