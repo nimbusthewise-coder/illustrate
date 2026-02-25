@@ -28,71 +28,31 @@ export interface Tool {
 }
 
 export const TOOLS: Record<ToolType, Tool> = {
+  // Photoshop-style shortcuts
+  move: {
+    type: 'move',
+    name: 'Move',
+    description: 'Move selection or components',
+    icon: '✥', // Move icon
+    cursor: 'move',
+    shortcut: 'v',
+  },
   select: {
     type: 'select',
-    name: 'Select',
-    description: 'Select and move components',
-    icon: '⌖', // Crosshair/target icon
-    cursor: 'default',
-    shortcut: '1',
+    name: 'Marquee',
+    description: 'Rectangle selection tool',
+    icon: '⬚', // Dotted rectangle icon
+    cursor: 'crosshair',
+    shortcut: 'm',
   },
   pen: {
     type: 'pen',
-    name: 'Pen',
-    description: 'Draw text and characters',
+    name: 'Brush',
+    description: 'Draw characters',
     icon: '✎', // Pen icon
-    cursor: 'text',
-    shortcut: '2',
-  },
-  line: {
-    type: 'line',
-    name: 'Line',
-    description: 'Draw lines',
-    icon: '╱', // Line icon
     cursor: 'crosshair',
-    shortcut: '3',
+    shortcut: 'b',
   },
-  rectangle: {
-    type: 'rectangle',
-    name: 'Rectangle',
-    description: 'Draw rectangles and boxes',
-    icon: '▭', // Rectangle icon
-    cursor: 'crosshair',
-    shortcut: '4',
-  },
-  ellipse: {
-    type: 'ellipse',
-    name: 'Ellipse',
-    description: 'Draw circles and ellipses',
-    icon: '○', // Circle icon
-    cursor: 'crosshair',
-    shortcut: '5',
-  },
-  arrow: {
-    type: 'arrow',
-    name: 'Arrow',
-    description: 'Draw arrows and connectors between boxes',
-    icon: '→', // Arrow icon
-    cursor: 'crosshair',
-    shortcut: '6',
-  },
-  eraser: {
-    type: 'eraser',
-    name: 'Eraser',
-    description: 'Erase characters',
-    icon: '⌫', // Erase icon
-    cursor: 'not-allowed',
-    shortcut: '7',
-  },
-  pan: {
-    type: 'pan',
-    name: 'Pan',
-    description: 'Pan and navigate canvas',
-    icon: '✋', // Hand icon
-    cursor: 'grab',
-    shortcut: 'space',
-  },
-  // Aliases and additional tools
   text: {
     type: 'text',
     name: 'Text',
@@ -101,20 +61,69 @@ export const TOOLS: Record<ToolType, Tool> = {
     cursor: 'text',
     shortcut: 't',
   },
+  line: {
+    type: 'line',
+    name: 'Line',
+    description: 'Draw lines',
+    icon: '╱', // Line icon
+    cursor: 'crosshair',
+    shortcut: 'l',
+  },
+  rectangle: {
+    type: 'rectangle',
+    name: 'Rectangle',
+    description: 'Draw rectangles and boxes',
+    icon: '▭', // Rectangle icon
+    cursor: 'crosshair',
+    shortcut: 'u',
+  },
+  ellipse: {
+    type: 'ellipse',
+    name: 'Ellipse',
+    description: 'Draw circles and ellipses',
+    icon: '○', // Circle icon
+    cursor: 'crosshair',
+    shortcut: 'o',
+  },
+  arrow: {
+    type: 'arrow',
+    name: 'Arrow',
+    description: 'Draw arrows and connectors',
+    icon: '→', // Arrow icon
+    cursor: 'crosshair',
+    shortcut: 'a',
+  },
+  eraser: {
+    type: 'eraser',
+    name: 'Eraser',
+    description: 'Erase characters',
+    icon: '⌫', // Erase icon
+    cursor: 'not-allowed',
+    shortcut: 'e',
+  },
+  fill: {
+    type: 'fill',
+    name: 'Fill',
+    description: 'Flood fill area',
+    icon: '🪣',
+    cursor: 'crosshair',
+    shortcut: 'g',
+  },
+  pan: {
+    type: 'pan',
+    name: 'Pan',
+    description: 'Pan canvas (hold Space)',
+    icon: '✋', // Hand icon
+    cursor: 'grab',
+    shortcut: 'space',
+  },
+  // Alias
   box: {
     type: 'box',
     name: 'Box',
     description: 'Draw boxes',
     icon: '▭',
     cursor: 'crosshair',
-    shortcut: 'b',
-  },
-  fill: {
-    type: 'fill',
-    name: 'Fill',
-    description: 'Fill area with color',
-    icon: '🪣',
-    cursor: 'crosshair',
-    shortcut: 'f',
+    shortcut: 'u',
   },
 };

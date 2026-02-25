@@ -512,7 +512,18 @@ export function Canvas() {
 
     switch (effectiveTool) {
       case 'select': {
-        // Clear text cursor when switching to select
+        // Marquee tool (M) - rectangle selection only
+        setTextCursor(null);
+        selectInstance(null);
+        setDraggingInstanceId(null);
+        setSelectionStart({ row, col });
+        setSelectionEnd({ row, col });
+        setIsDrawing(true);
+        break;
+      }
+
+      case 'move': {
+        // Move tool (V) - move instances or selections
         setTextCursor(null);
         
         // Check for component instance click first
@@ -541,12 +552,10 @@ export function Canvas() {
           setSelectionEnd(null);
           setIsDrawing(false);
         } else {
-          // Start rectangular selection for drawn content
+          // If there's a selection and clicking inside it, prepare to move
+          // Otherwise deselect
           selectInstance(null);
           setDraggingInstanceId(null);
-          setSelectionStart({ row, col });
-          setSelectionEnd({ row, col });
-          setIsDrawing(true);
         }
         break;
       }
