@@ -86,7 +86,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/editor"
-              className="px-6 py-3 border border-border text-foreground rounded-full hover:bg-muted transition-colors"
+              className="px-6 py-0 border border-border text-foreground rounded-full hover:bg-muted transition-colors"
             >
               Try without account
             </Link>
@@ -101,7 +101,7 @@ export default function LandingPage() {
  */}
 
       {/* Demo Preview */}
-      <section className="py-16 px-4">
+      <section className="py-4 px-4">
         <div className="max-w-4xl mx-auto flex justify-center">
           <pre className="text-foreground text-xs sm:text-sm leading-relaxed">{`┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
