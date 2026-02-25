@@ -67,6 +67,7 @@ export function Canvas() {
   const selectInstance = useComponentInstanceStore((s) => s.selectInstance);
   const selectedInstanceId = useComponentInstanceStore((s) => s.selectedInstanceId);
   const removeInstance = useComponentInstanceStore((s) => s.removeInstance);
+  const moveInstance = useComponentInstanceStore((s) => s.moveInstance);
   const foregroundColor = useColorStore((s) => s.foreground);
   const backgroundColor = useColorStore((s) => s.background);
   const { getComponent } = useComponents();
@@ -87,6 +88,10 @@ export function Canvas() {
   const [selectionStart, setSelectionStart] = useState<{ row: number; col: number } | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<{ row: number; col: number } | null>(null);
   const setGlobalSelection = useSelectionStore((s) => s.setSelection);
+  
+  // Instance dragging state
+  const [draggingInstanceId, setDraggingInstanceId] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState<{ row: number; col: number }>({ row: 0, col: 0 });
   
   // Layer mutations
   const setCell = useLayerStore((s) => s.setCell);
@@ -404,13 +409,8 @@ export function Canvas() {
         // Clear text cursor when switching to select
         setTextCursor(null);
         
-        // Start rectangular selection for drawn content
-        setSelectionStart({ row, col });
-        setSelectionEnd({ row, col });
-        setIsDrawing(true);
-        
-        // Also check for component instance selection
-        let clickedInstanceId: string | null = null;
+        // Check for component instance click first
+        let clickedInstance: typeof instances[0] | null = null;
         for (const instance of instances) {
           const component = getComponent(instance.componentId);
           if (!component) continue;
@@ -421,15 +421,26 @@ export function Canvas() {
             row >= instance.y &&
             row < instance.y + boundingBox.height
           ) {
-            clickedInstanceId = instance.id;
+            clickedInstance = instance;
             break;
           }
         }
-        if (clickedInstanceId) {
-          selectInstance(clickedInstanceId);
+        
+        if (clickedInstance) {
+          // Select and start dragging the instance
+          selectInstance(clickedInstance.id);
+          setDraggingInstanceId(clickedInstance.id);
+          setDragOffset({ row: row - clickedInstance.y, col: col - clickedInstance.x });
           setSelectionStart(null);
           setSelectionEnd(null);
           setIsDrawing(false);
+        } else {
+          // Start rectangular selection for drawn content
+          selectInstance(null);
+          setDraggingInstanceId(null);
+          setSelectionStart({ row, col });
+          setSelectionEnd({ row, col });
+          setIsDrawing(true);
         }
         break;
       }
