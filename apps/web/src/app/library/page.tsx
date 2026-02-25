@@ -2,6 +2,7 @@
 
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { DiagramLibrary } from '@/components/DiagramLibrary';
+import { LogoMark } from '@/components/icons';
 
 export default function LibraryPage() {
   return (
@@ -15,7 +16,10 @@ export default function LibraryPage() {
             >
               ← Back to Canvas
             </a>
-            <h1 className="text-3xl font-bold">illustrate.md</h1>
+            <div className="flex items-center gap-2">
+              <LogoMark size={32} />
+              <h1 className="text-3xl font-bold">illustrate.md</h1>
+            </div>
           </div>
           <ThemeSelector />
         </header>
