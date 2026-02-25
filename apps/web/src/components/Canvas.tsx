@@ -96,6 +96,9 @@ export function Canvas() {
   // Layer mutations
   const setCell = useLayerStore((s) => s.setCell);
   const setCells = useLayerStore((s) => s.setCells);
+  const setCellsWithUndo = useLayerStore((s) => s.setCellsWithUndo);
+  const undo = useLayerStore((s) => s.undo);
+  const redo = useLayerStore((s) => s.redo);
   const getLayer = useLayerStore((s) => s.getLayer);
   const isLayerLocked = useLayerStore((s) => s.isLayerLocked);
   // Subscribe to layer data changes for live rendering
@@ -160,6 +163,41 @@ export function Canvas() {
       action: () => {
         toggleLayerLock(activeLayerId);
       },
+      preventDefault: true,
+    },
+    {
+      keys: ['z'],
+      modifiers: ['meta'],
+      description: 'Undo',
+      action: () => undo(),
+      preventDefault: true,
+    },
+    {
+      keys: ['z'],
+      modifiers: ['ctrl'],
+      description: 'Undo',
+      action: () => undo(),
+      preventDefault: true,
+    },
+    {
+      keys: ['z'],
+      modifiers: ['meta', 'shift'],
+      description: 'Redo',
+      action: () => redo(),
+      preventDefault: true,
+    },
+    {
+      keys: ['z'],
+      modifiers: ['ctrl', 'shift'],
+      description: 'Redo',
+      action: () => redo(),
+      preventDefault: true,
+    },
+    {
+      keys: ['y'],
+      modifiers: ['ctrl'],
+      description: 'Redo',
+      action: () => redo(),
       preventDefault: true,
     },
     // F003: Zoom shortcuts
