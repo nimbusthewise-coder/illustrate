@@ -770,21 +770,21 @@ export function Canvas() {
       return;
     }
 
-    // Commit preview to canvas
+    // Commit preview to canvas with undo tracking
     if (drawPreview.length > 0) {
       const cells = drawPreview.map(p => ({
         row: p.row,
         col: p.col,
         char: p.char,
       }));
-      setCells(activeLayerId, cells);
+      setCellsWithUndo(activeLayerId, cells);
     }
 
     setIsDrawing(false);
     setDrawStart(null);
     lastCellRef.current = null;
     setDrawPreview([]);
-  }, [isDrawing, drawPreview, activeLayerId, setCells, effectiveTool, selectionStart, selectionEnd, draggingInstanceId]);
+  }, [isDrawing, drawPreview, activeLayerId, setCellsWithUndo, effectiveTool, selectionStart, selectionEnd, draggingInstanceId]);
 
   // Legacy click handler (kept for component selection)
   const handleCanvasClick = (e: React.MouseEvent) => {
