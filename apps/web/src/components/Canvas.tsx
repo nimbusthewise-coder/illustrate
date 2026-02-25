@@ -692,6 +692,13 @@ export function Canvas() {
   const handleMouseUp = useCallback(() => {
     if (!isDrawing) return;
 
+    // For select tool, keep the selection visible
+    if (effectiveTool === 'select' && selectionStart && selectionEnd) {
+      // Selection is kept - don't clear it
+      setIsDrawing(false);
+      return;
+    }
+
     // Commit preview to canvas
     if (drawPreview.length > 0) {
       const cells = drawPreview.map(p => ({
@@ -706,7 +713,7 @@ export function Canvas() {
     setDrawStart(null);
     lastCellRef.current = null;
     setDrawPreview([]);
-  }, [isDrawing, drawPreview, activeLayerId, setCells]);
+  }, [isDrawing, drawPreview, activeLayerId, setCells, effectiveTool, selectionStart, selectionEnd]);
 
   // Legacy click handler (kept for component selection)
   const handleCanvasClick = (e: React.MouseEvent) => {
@@ -748,6 +755,16 @@ export function Canvas() {
       const isPreview = !!previewChar;
       const isTextCursor = textCursor?.row === row && textCursor?.col === col;
       
+      // Check if cell is in selection rectangle
+      let isInSelection = false;
+      if (selectionStart && selectionEnd) {
+        const minRow = Math.min(selectionStart.row, selectionEnd.row);
+        const maxRow = Math.max(selectionStart.row, selectionEnd.row);
+        const minCol = Math.min(selectionStart.col, selectionEnd.col);
+        const maxCol = Math.max(selectionStart.col, selectionEnd.col);
+        isInSelection = row >= minRow && row <= maxRow && col >= minCol && col <= maxCol;
+      }
+      
       cells.push(
         <span
           key={cellKey}
@@ -757,7 +774,7 @@ export function Canvas() {
             isSelected ? 'bg-primary/20' : ''
           } ${isPreview ? 'text-primary/70' : ''} ${
             isTextCursor ? 'bg-primary text-primary-foreground animate-pulse' : ''
-          }`}
+          } ${isInSelection ? 'bg-blue-500/30' : ''}`}
         >
           {char}
         </span>,
