@@ -275,61 +275,8 @@ export function Canvas() {
       },
       preventDefault: true,
     },
-    // F003: Zoom shortcuts
-    {
-      keys: ['=', '+'],
-      modifiers: ['ctrl'],
-      description: 'Zoom in',
-      action: () => {
-        zoomIn();
-      },
-      preventDefault: true,
-    },
-    {
-      keys: ['=', '+'],
-      modifiers: ['meta'],
-      description: 'Zoom in',
-      action: () => {
-        zoomIn();
-      },
-      preventDefault: true,
-    },
-    {
-      keys: ['-'],
-      modifiers: ['ctrl'],
-      description: 'Zoom out',
-      action: () => {
-        zoomOut();
-      },
-      preventDefault: true,
-    },
-    {
-      keys: ['-'],
-      modifiers: ['meta'],
-      description: 'Zoom out',
-      action: () => {
-        zoomOut();
-      },
-      preventDefault: true,
-    },
-    {
-      keys: ['0'],
-      modifiers: ['ctrl'],
-      description: 'Reset zoom to 100%',
-      action: () => {
-        resetZoom();
-      },
-      preventDefault: true,
-    },
-    {
-      keys: ['0'],
-      modifiers: ['meta'],
-      description: 'Reset zoom to 100%',
-      action: () => {
-        resetZoom();
-      },
-      preventDefault: true,
-    },
+    // Note: Zoom shortcuts (Cmd/Ctrl +/-) removed to let browser handle native page zoom
+    // Canvas zoom via on-screen controls or Cmd/Ctrl+scroll wheel
   ], { scope: 'canvas' });
 
   // Text editing keyboard handler

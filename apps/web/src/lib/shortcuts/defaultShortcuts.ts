@@ -122,30 +122,8 @@ export const DEFAULT_SHORTCUTS: ShortcutBinding[] = [
   },
 
   // ─── Navigation ──────────────────────────────────────────────────
-  {
-    id: 'nav.zoomIn',
-    keys: ['+'],
-    modifiers: ['ctrl'],
-    description: 'Zoom in',
-    scope: 'canvas',
-    category: 'navigation',
-  },
-  {
-    id: 'nav.zoomOut',
-    keys: ['-'],
-    modifiers: ['ctrl'],
-    description: 'Zoom out',
-    scope: 'canvas',
-    category: 'navigation',
-  },
-  {
-    id: 'nav.zoomReset',
-    keys: ['0'],
-    modifiers: ['ctrl'],
-    description: 'Reset zoom',
-    scope: 'canvas',
-    category: 'navigation',
-  },
+  // Note: Cmd/Ctrl +/- left to browser for native page zoom
+  // Canvas zoom via on-screen controls or Cmd/Ctrl+scroll wheel
   {
     id: 'nav.fitToScreen',
     keys: ['f'],
