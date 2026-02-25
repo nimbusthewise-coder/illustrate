@@ -11,7 +11,7 @@ import { useLayerStore } from '@/stores/layer-store';
 import { ClipboardButton } from '@/components/ClipboardButton';
 import { TerminalPreview } from '@/components/TerminalPreview';
 import { useCanvasStore } from '@/stores/canvas-store';
-import { createBuffer, setChar } from '@illustrate.md/core';
+import { createBuffer, setChar, exportLLMFormat, exportLLMFormatAsText } from '@illustrate.md/core';
 import type { CanvasDocument, Buffer } from '@illustrate.md/core';
 
 export interface ExportButtonProps {
@@ -93,6 +93,37 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ className }) => {
     };
   }, [width, height, layers]);
 
+  const handleLLMExportText = useCallback(() => {
+    const doc = getCanvasDocument();
+    const text = exportLLMFormatAsText(doc);
+    const blob = new Blob([text], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'diagram-llm.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setShowMenu(false);
+  }, [getCanvasDocument]);
+
+  const handleLLMExportJSON = useCallback(() => {
+    const doc = getCanvasDocument();
+    const result = exportLLMFormat(doc);
+    const json = JSON.stringify(result, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'diagram-llm.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setShowMenu(false);
+  }, [getCanvasDocument]);
+
   return (
     <>
       <div className="relative inline-block">
@@ -146,6 +177,22 @@ export const ExportButton: React.FC<ExportButtonProps> = ({ className }) => {
                   className="w-full text-left px-3 py-2 hover:bg-muted rounded text-sm transition-colors"
                 >
                   📋 Log to Console
+                </button>
+                
+                <div className="border-t border-border my-1" />
+                
+                <button
+                  onClick={handleLLMExportText}
+                  className="w-full text-left px-3 py-2 hover:bg-muted rounded text-sm transition-colors"
+                >
+                  🤖 LLM Format (.md)
+                </button>
+                
+                <button
+                  onClick={handleLLMExportJSON}
+                  className="w-full text-left px-3 py-2 hover:bg-muted rounded text-sm transition-colors"
+                >
+                  🤖 LLM Format (.json)
                 </button>
               </div>
             </div>

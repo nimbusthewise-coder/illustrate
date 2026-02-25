@@ -2,13 +2,20 @@
  * Tests for F041: Plain ASCII text export
  * Tests for F042: Markdown code block export
  * Tests for F045: Copy to clipboard (rich format with ANSI codes)
+ * Tests for F028: LLM-Readable Export Format with Semantic Annotations
  */
 
 import { describe, it, expect } from 'vitest';
 import { createBuffer, setChar } from './buffer.js';
 import { createLayer, compositeLayers } from './layer.js';
-import { bufferToAscii, exportPlainAscii, exportMarkdownCodeBlock, bufferToAnsiText, exportAnsiText } from './export.js';
-import type { CanvasDocument } from './types.js';
+import {
+  bufferToAscii, exportPlainAscii, exportMarkdownCodeBlock,
+  bufferToAnsiText, exportAnsiText,
+  exportLLMFormat, exportLLMFormatAsText,
+  calculateSpatialRelationships, extractComponentInstances,
+  type ComponentInstance
+} from './export.js';
+import type { CanvasDocument, DesignSystem } from './types.js';
 
 describe('F041: Plain ASCII text export', () => {
   describe('bufferToAscii', () => {
@@ -681,6 +688,322 @@ describe('F041: Plain ASCII text export', () => {
       expect(result).toContain('.');
       expect(result).toContain('O');
       expect(result).toContain('K');
+    });
+  });
+});
+
+// ============================================================
+// F028: LLM-Readable Export Format with Semantic Annotations
+// ============================================================
+
+function makeTestDocument(overrides?: Partial<CanvasDocument>): CanvasDocument {
+  const layer = createLayer('layer-1', 'Main', 10, 5);
+  // Draw a small box
+  setChar(layer.buffer, 0, 0, '┌');
+  setChar(layer.buffer, 0, 1, '─');
+  setChar(layer.buffer, 0, 2, '┐');
+  setChar(layer.buffer, 1, 0, '│');
+  setChar(layer.buffer, 1, 1, 'A');
+  setChar(layer.buffer, 1, 2, '│');
+  setChar(layer.buffer, 2, 0, '└');
+  setChar(layer.buffer, 2, 1, '─');
+  setChar(layer.buffer, 2, 2, '┘');
+
+  return {
+    id: 'test-doc',
+    title: 'Test Diagram',
+    width: 10,
+    height: 5,
+    layers: [layer],
+    designSystem: null,
+    tags: ['test', 'example'],
+    createdAt: 1000000,
+    updatedAt: 2000000,
+    ...overrides,
+  };
+}
+
+function makeDesignSystem(): DesignSystem {
+  return {
+    id: 'ds-1',
+    name: 'Test DS',
+    description: 'A test design system',
+    version: '1.0.0',
+    charset: {
+      boxLight: { tl: '┌', tr: '┐', bl: '└', br: '┘', h: '─', v: '│' },
+      boxHeavy: { tl: '┏', tr: '┓', bl: '┗', br: '┛', h: '━', v: '┃' },
+      boxDouble: { tl: '╔', tr: '╗', bl: '╚', br: '╝', h: '═', v: '║' },
+      boxRound: { tl: '╭', tr: '╮', bl: '╰', br: '╯', h: '─', v: '│' },
+      connectors: { left: '├', right: '┤', top: '┬', bottom: '┴', cross: '┼' },
+      arrows: {
+        left: '←', right: '→', up: '↑', down: '↓',
+        leftFilled: '◀', rightFilled: '▶', upFilled: '▲', downFilled: '▼',
+      },
+      fills: [' ', '░', '▒', '▓', '█'],
+    },
+    components: [
+      {
+        id: 'comp-btn',
+        name: 'Button',
+        description: 'A button component',
+        role: 'input',
+        minWidth: 6,
+        minHeight: 3,
+        resizable: true,
+        template: createBuffer(6, 3),
+        slots: [{ name: 'label', x: 1, y: 1, width: 4, height: 1, default: 'OK' }],
+        tags: ['ui'],
+      },
+      {
+        id: 'comp-card',
+        name: 'Card',
+        description: 'A card container',
+        role: 'container',
+        minWidth: 10,
+        minHeight: 5,
+        resizable: true,
+        template: createBuffer(10, 5),
+        slots: [],
+        tags: ['layout'],
+      },
+    ],
+    createdAt: 1000000,
+    updatedAt: 1000000,
+  };
+}
+
+describe('F028: LLM-Readable Export Format with Semantic Annotations', () => {
+  describe('exportLLMFormat', () => {
+    it('should export basic document structure', () => {
+      const doc = makeTestDocument();
+      const result = exportLLMFormat(doc);
+
+      expect(result.version).toBe('1.0.0');
+      expect(result.format).toBe('illustrate-llm-v1');
+      expect(result.document.id).toBe('test-doc');
+      expect(result.document.title).toBe('Test Diagram');
+      expect(result.document.width).toBe(10);
+      expect(result.document.height).toBe(5);
+      expect(result.document.tags).toEqual(['test', 'example']);
+    });
+
+    it('should include ASCII rendering', () => {
+      const doc = makeTestDocument();
+      const result = exportLLMFormat(doc);
+
+      expect(result.ascii).toContain('┌─┐');
+      expect(result.ascii).toContain('│A│');
+      expect(result.ascii).toContain('└─┘');
+    });
+
+    it('should include visible layer metadata', () => {
+      const doc = makeTestDocument();
+      const result = exportLLMFormat(doc);
+
+      expect(result.metadata.layers).toHaveLength(1);
+      expect(result.metadata.layers[0].name).toBe('Main');
+      expect(result.metadata.layers[0].width).toBe(10);
+      expect(result.metadata.layers[0].height).toBe(5);
+    });
+
+    it('should filter out invisible layers', () => {
+      const layer1 = createLayer('l1', 'Visible', 10, 5);
+      const layer2 = createLayer('l2', 'Hidden', 10, 5);
+      layer2.visible = false;
+
+      const doc = makeTestDocument({ layers: [layer1, layer2] });
+      const result = exportLLMFormat(doc);
+
+      expect(result.metadata.layers).toHaveLength(1);
+      expect(result.metadata.layers[0].name).toBe('Visible');
+    });
+
+    it('should include design system metadata when present', () => {
+      const doc = makeTestDocument({ designSystem: makeDesignSystem() });
+      const result = exportLLMFormat(doc);
+
+      expect(result.metadata.designSystem).not.toBeNull();
+      expect(result.metadata.designSystem!.name).toBe('Test DS');
+      expect(result.metadata.designSystem!.version).toBe('1.0.0');
+      expect(result.metadata.designSystem!.componentCount).toBe(2);
+      expect(result.metadata.designSystem!.componentNames).toEqual(['Button', 'Card']);
+    });
+
+    it('should have null design system when not present', () => {
+      const doc = makeTestDocument();
+      const result = exportLLMFormat(doc);
+
+      expect(result.metadata.designSystem).toBeNull();
+    });
+
+    it('should handle empty document', () => {
+      const layer = createLayer('l1', 'Empty', 3, 3);
+      const doc = makeTestDocument({ layers: [layer], tags: [] });
+      const result = exportLLMFormat(doc);
+
+      expect(result.ascii).toBeDefined();
+      expect(result.metadata.components).toEqual([]);
+      expect(result.metadata.relationships).toEqual([]);
+    });
+
+    it('should produce valid JSON when serialized', () => {
+      const doc = makeTestDocument({ designSystem: makeDesignSystem() });
+      const result = exportLLMFormat(doc);
+      const json = JSON.stringify(result);
+      const parsed = JSON.parse(json);
+
+      expect(parsed.format).toBe('illustrate-llm-v1');
+      expect(parsed.ascii).toContain('┌─┐');
+    });
+  });
+
+  describe('exportLLMFormatAsText', () => {
+    it('should produce human-readable text format', () => {
+      const doc = makeTestDocument();
+      const result = exportLLMFormatAsText(doc);
+
+      expect(result).toContain('# illustrate.md — LLM Export');
+      expect(result).toContain('**Format:** illustrate-llm-v1');
+      expect(result).toContain('**Title:** Test Diagram');
+      expect(result).toContain('**Size:** 10×5');
+    });
+
+    it('should include ASCII in code block', () => {
+      const doc = makeTestDocument();
+      const result = exportLLMFormatAsText(doc);
+
+      expect(result).toContain('```text');
+      expect(result).toContain('┌─┐');
+      expect(result).toContain('```');
+    });
+
+    it('should include tags', () => {
+      const doc = makeTestDocument();
+      const result = exportLLMFormatAsText(doc);
+
+      expect(result).toContain('**Tags:** test, example');
+    });
+
+    it('should include design system section when present', () => {
+      const doc = makeTestDocument({ designSystem: makeDesignSystem() });
+      const result = exportLLMFormatAsText(doc);
+
+      expect(result).toContain('## Design System');
+      expect(result).toContain('**Name:** Test DS');
+      expect(result).toContain('**Components:** 2');
+      expect(result).toContain('Button, Card');
+    });
+
+    it('should omit design system section when absent', () => {
+      const doc = makeTestDocument();
+      const result = exportLLMFormatAsText(doc);
+
+      expect(result).not.toContain('## Design System');
+    });
+
+    it('should include layers section', () => {
+      const doc = makeTestDocument();
+      const result = exportLLMFormatAsText(doc);
+
+      expect(result).toContain('## Layers');
+      expect(result).toContain('**Main**');
+    });
+
+    it('should include footer metadata', () => {
+      const doc = makeTestDocument();
+      const result = exportLLMFormatAsText(doc);
+
+      expect(result).toContain('10×5 canvas');
+      expect(result).toContain('1 layer(s)');
+    });
+  });
+
+  describe('calculateSpatialRelationships', () => {
+    it('should return empty array for no components', () => {
+      expect(calculateSpatialRelationships([])).toEqual([]);
+    });
+
+    it('should detect containment', () => {
+      const components: ComponentInstance[] = [
+        {
+          componentId: 'c1', name: 'Outer', role: 'container',
+          description: '', x: 0, y: 0, width: 20, height: 10,
+          slots: [], tags: [],
+        },
+        {
+          componentId: 'c2', name: 'Inner', role: 'input',
+          description: '', x: 2, y: 2, width: 5, height: 3,
+          slots: [], tags: [],
+        },
+      ];
+
+      const rels = calculateSpatialRelationships(components);
+      expect(rels).toContainEqual({ from: 'Outer', to: 'Inner', type: 'contains' });
+      expect(rels).toContainEqual({ from: 'Inner', to: 'Outer', type: 'contained-by' });
+    });
+
+    it('should detect vertical adjacency', () => {
+      const components: ComponentInstance[] = [
+        {
+          componentId: 'c1', name: 'Top', role: 'display',
+          description: '', x: 0, y: 0, width: 10, height: 3,
+          slots: [], tags: [],
+        },
+        {
+          componentId: 'c2', name: 'Bottom', role: 'display',
+          description: '', x: 0, y: 3, width: 10, height: 3,
+          slots: [], tags: [],
+        },
+      ];
+
+      const rels = calculateSpatialRelationships(components);
+      expect(rels).toContainEqual({ from: 'Top', to: 'Bottom', type: 'above' });
+      expect(rels).toContainEqual({ from: 'Bottom', to: 'Top', type: 'below' });
+    });
+
+    it('should detect horizontal adjacency', () => {
+      const components: ComponentInstance[] = [
+        {
+          componentId: 'c1', name: 'Left', role: 'display',
+          description: '', x: 0, y: 0, width: 5, height: 5,
+          slots: [], tags: [],
+        },
+        {
+          componentId: 'c2', name: 'Right', role: 'display',
+          description: '', x: 5, y: 0, width: 5, height: 5,
+          slots: [], tags: [],
+        },
+      ];
+
+      const rels = calculateSpatialRelationships(components);
+      expect(rels).toContainEqual({ from: 'Left', to: 'Right', type: 'left-of' });
+      expect(rels).toContainEqual({ from: 'Right', to: 'Left', type: 'right-of' });
+    });
+
+    it('should detect overlap', () => {
+      const components: ComponentInstance[] = [
+        {
+          componentId: 'c1', name: 'A', role: 'display',
+          description: '', x: 0, y: 0, width: 10, height: 5,
+          slots: [], tags: [],
+        },
+        {
+          componentId: 'c2', name: 'B', role: 'display',
+          description: '', x: 5, y: 2, width: 10, height: 5,
+          slots: [], tags: [],
+        },
+      ];
+
+      const rels = calculateSpatialRelationships(components);
+      expect(rels).toContainEqual({ from: 'A', to: 'B', type: 'overlaps' });
+    });
+  });
+
+  describe('extractComponentInstances', () => {
+    it('should return empty array (pending F021)', () => {
+      const doc = makeTestDocument();
+      const result = extractComponentInstances(doc);
+      expect(result).toEqual([]);
     });
   });
 });

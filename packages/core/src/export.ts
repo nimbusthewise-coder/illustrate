@@ -5,7 +5,7 @@
  * and outputs newline-delimited rows that match the canvas exactly.
  */
 
-import type { CanvasDocument, Buffer } from './types.js';
+import type { CanvasDocument, Buffer, Component, Slot, ComponentRole } from './types.js';
 import { compositeLayers } from './layer.js';
 import { getChar } from './buffer.js';
 
@@ -264,4 +264,402 @@ export function exportAnsiText(document: CanvasDocument): string {
   );
   
   return bufferToAnsiText(composited);
+}
+
+// ============================================================
+// F028: LLM-Readable Export Format with Semantic Annotations
+// ============================================================
+
+/**
+ * A component instance placed on the canvas
+ */
+export interface ComponentInstance {
+  componentId: string;
+  name: string;
+  role: ComponentRole;
+  description: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  slots: SlotInstance[];
+  tags: string[];
+}
+
+/**
+ * A slot instance with its current content
+ */
+export interface SlotInstance {
+  name: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  content: string;
+}
+
+/**
+ * Spatial relationship between two components
+ */
+export interface SpatialRelationship {
+  from: string;  // component name
+  to: string;    // component name
+  type: 'above' | 'below' | 'left-of' | 'right-of' | 'contains' | 'contained-by' | 'overlaps' | 'adjacent';
+}
+
+/**
+ * Layer metadata for the export
+ */
+export interface LayerInfo {
+  id: string;
+  name: string;
+  visible: boolean;
+  locked: boolean;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Design system metadata for the export
+ */
+export interface DesignSystemInfo {
+  name: string;
+  version: string;
+  componentCount: number;
+  componentNames: string[];
+}
+
+/**
+ * Complete semantic metadata
+ */
+export interface SemanticMetadata {
+  layers: LayerInfo[];
+  components: ComponentInstance[];
+  relationships: SpatialRelationship[];
+  designSystem: DesignSystemInfo | null;
+}
+
+/**
+ * The top-level LLM export format
+ */
+export interface LLMExportFormat {
+  version: string;
+  format: 'illustrate-llm-v1';
+  document: {
+    id: string;
+    title: string;
+    width: number;
+    height: number;
+    tags: string[];
+    createdAt: number;
+    updatedAt: number;
+  };
+  ascii: string;
+  metadata: SemanticMetadata;
+}
+
+/**
+ * Calculate spatial relationships between component instances.
+ * 
+ * Determines how components relate to each other spatially:
+ * - contains/contained-by: one fully inside another
+ * - above/below/left-of/right-of: non-overlapping adjacency
+ * - overlaps: partial overlap
+ * - adjacent: close but not overlapping
+ */
+export function calculateSpatialRelationships(
+  components: ComponentInstance[]
+): SpatialRelationship[] {
+  const relationships: SpatialRelationship[] = [];
+
+  for (let i = 0; i < components.length; i++) {
+    for (let j = i + 1; j < components.length; j++) {
+      const a = components[i];
+      const b = components[j];
+
+      const aRight = a.x + a.width;
+      const aBottom = a.y + a.height;
+      const bRight = b.x + b.width;
+      const bBottom = b.y + b.height;
+
+      // Check containment
+      const aContainsB =
+        a.x <= b.x && a.y <= b.y && aRight >= bRight && aBottom >= bBottom;
+      const bContainsA =
+        b.x <= a.x && b.y <= a.y && bRight >= aRight && bBottom >= aBottom;
+
+      if (aContainsB) {
+        relationships.push({ from: a.name, to: b.name, type: 'contains' });
+        relationships.push({ from: b.name, to: a.name, type: 'contained-by' });
+        continue;
+      }
+      if (bContainsA) {
+        relationships.push({ from: b.name, to: a.name, type: 'contains' });
+        relationships.push({ from: a.name, to: b.name, type: 'contained-by' });
+        continue;
+      }
+
+      // Check overlap
+      const overlapX = a.x < bRight && aRight > b.x;
+      const overlapY = a.y < bBottom && aBottom > b.y;
+
+      if (overlapX && overlapY) {
+        relationships.push({ from: a.name, to: b.name, type: 'overlaps' });
+        continue;
+      }
+
+      // Check adjacency (within 1 cell)
+      const gapX = Math.max(0, Math.max(a.x - bRight, b.x - aRight));
+      const gapY = Math.max(0, Math.max(a.y - bBottom, b.y - aBottom));
+
+      if (gapX <= 1 && gapY <= 1) {
+        // Determine primary direction
+        const aCenterX = a.x + a.width / 2;
+        const aCenterY = a.y + a.height / 2;
+        const bCenterX = b.x + b.width / 2;
+        const bCenterY = b.y + b.height / 2;
+
+        const dx = bCenterX - aCenterX;
+        const dy = bCenterY - aCenterY;
+
+        if (Math.abs(dy) >= Math.abs(dx)) {
+          if (dy > 0) {
+            relationships.push({ from: a.name, to: b.name, type: 'above' });
+            relationships.push({ from: b.name, to: a.name, type: 'below' });
+          } else {
+            relationships.push({ from: a.name, to: b.name, type: 'below' });
+            relationships.push({ from: b.name, to: a.name, type: 'above' });
+          }
+        } else {
+          if (dx > 0) {
+            relationships.push({ from: a.name, to: b.name, type: 'left-of' });
+            relationships.push({ from: b.name, to: a.name, type: 'right-of' });
+          } else {
+            relationships.push({ from: a.name, to: b.name, type: 'right-of' });
+            relationships.push({ from: b.name, to: a.name, type: 'left-of' });
+          }
+        }
+      }
+    }
+  }
+
+  return relationships;
+}
+
+/**
+ * Extract text content from a buffer region
+ */
+function extractSlotContent(
+  buffer: Buffer,
+  slotX: number,
+  slotY: number,
+  slotWidth: number,
+  slotHeight: number
+): string {
+  const lines: string[] = [];
+  for (let row = slotY; row < slotY + slotHeight && row < buffer.height; row++) {
+    let line = '';
+    for (let col = slotX; col < slotX + slotWidth && col < buffer.width; col++) {
+      line += getChar(buffer, row, col);
+    }
+    lines.push(line.trimEnd());
+  }
+  return lines.join('\n').trim();
+}
+
+/**
+ * Extract component instances from a document.
+ * 
+ * This inspects the document's design system and layers to find
+ * placed component instances. Currently returns instances based on
+ * the design system's component definitions.
+ * 
+ * Note: Full instance extraction requires F021 (Place Components).
+ * This provides the structural framework.
+ */
+export function extractComponentInstances(
+  document: CanvasDocument
+): ComponentInstance[] {
+  // Without F021's placement tracking, we return an empty array.
+  // The structure is ready for when component placement is implemented.
+  // When F021 lands, this function will scan layers for placed instances
+  // and return their positions, roles, and slot contents.
+  return [];
+}
+
+/**
+ * F028: Export canvas document to LLM-readable JSON format
+ * 
+ * Produces a structured JSON object combining:
+ * - Plain ASCII rendering of the canvas
+ * - Semantic metadata (layers, components, relationships)
+ * - Design system info
+ * 
+ * Designed to be round-trip parseable by LLMs like Claude.
+ * 
+ * @param document - The canvas document to export
+ * @returns LLMExportFormat object
+ */
+export function exportLLMFormat(document: CanvasDocument): LLMExportFormat {
+  const ascii = exportPlainAscii(document);
+
+  const visibleLayers = document.layers.filter(l => l.visible);
+  const layerInfos: LayerInfo[] = visibleLayers.map(l => ({
+    id: l.id,
+    name: l.name,
+    visible: l.visible,
+    locked: l.locked,
+    x: l.x,
+    y: l.y,
+    width: l.buffer.width,
+    height: l.buffer.height,
+  }));
+
+  const components = extractComponentInstances(document);
+  const relationships = calculateSpatialRelationships(components);
+
+  let designSystemInfo: DesignSystemInfo | null = null;
+  if (document.designSystem) {
+    designSystemInfo = {
+      name: document.designSystem.name,
+      version: document.designSystem.version,
+      componentCount: document.designSystem.components.length,
+      componentNames: document.designSystem.components.map(c => c.name),
+    };
+  }
+
+  return {
+    version: '1.0.0',
+    format: 'illustrate-llm-v1',
+    document: {
+      id: document.id,
+      title: document.title,
+      width: document.width,
+      height: document.height,
+      tags: document.tags,
+      createdAt: document.createdAt,
+      updatedAt: document.updatedAt,
+    },
+    ascii,
+    metadata: {
+      layers: layerInfos,
+      components,
+      relationships,
+      designSystem: designSystemInfo,
+    },
+  };
+}
+
+/**
+ * F028: Export canvas document to LLM-readable text/markdown format
+ * 
+ * Produces a human-readable markdown document combining:
+ * - YAML-like header with document metadata
+ * - ASCII rendering in a code block
+ * - Semantic annotations section
+ * 
+ * Optimized for LLM consumption: structured enough to parse,
+ * readable enough for humans.
+ * 
+ * @param document - The canvas document to export
+ * @returns Markdown-formatted string with semantic annotations
+ */
+export function exportLLMFormatAsText(document: CanvasDocument): string {
+  const data = exportLLMFormat(document);
+  const parts: string[] = [];
+
+  // Header
+  parts.push('# illustrate.md — LLM Export');
+  parts.push('');
+  parts.push(`**Format:** ${data.format}`);
+  parts.push(`**Version:** ${data.version}`);
+  parts.push('');
+
+  // Document info
+  parts.push('## Document');
+  parts.push('');
+  parts.push(`- **Title:** ${data.document.title}`);
+  parts.push(`- **Size:** ${data.document.width}×${data.document.height}`);
+  if (data.document.tags.length > 0) {
+    parts.push(`- **Tags:** ${data.document.tags.join(', ')}`);
+  }
+  parts.push('');
+
+  // Design system
+  if (data.metadata.designSystem) {
+    const ds = data.metadata.designSystem;
+    parts.push('## Design System');
+    parts.push('');
+    parts.push(`- **Name:** ${ds.name}`);
+    parts.push(`- **Version:** ${ds.version}`);
+    parts.push(`- **Components:** ${ds.componentCount}`);
+    if (ds.componentNames.length > 0) {
+      parts.push(`- **Available:** ${ds.componentNames.join(', ')}`);
+    }
+    parts.push('');
+  }
+
+  // ASCII diagram
+  parts.push('## Diagram');
+  parts.push('');
+  parts.push('```text');
+  parts.push(data.ascii);
+  parts.push('```');
+  parts.push('');
+
+  // Layers
+  if (data.metadata.layers.length > 0) {
+    parts.push('## Layers');
+    parts.push('');
+    for (const layer of data.metadata.layers) {
+      const lockIndicator = layer.locked ? ' 🔒' : '';
+      parts.push(`- **${layer.name}**${lockIndicator} — ${layer.width}×${layer.height} at (${layer.x}, ${layer.y})`);
+    }
+    parts.push('');
+  }
+
+  // Components
+  if (data.metadata.components.length > 0) {
+    parts.push('## Components');
+    parts.push('');
+    for (const comp of data.metadata.components) {
+      parts.push(`### ${comp.name} (${comp.role})`);
+      parts.push('');
+      if (comp.description) {
+        parts.push(comp.description);
+        parts.push('');
+      }
+      parts.push(`- **Position:** (${comp.x}, ${comp.y})`);
+      parts.push(`- **Size:** ${comp.width}×${comp.height}`);
+      if (comp.tags.length > 0) {
+        parts.push(`- **Tags:** ${comp.tags.join(', ')}`);
+      }
+      if (comp.slots.length > 0) {
+        parts.push('- **Slots:**');
+        for (const slot of comp.slots) {
+          const content = slot.content || '(empty)';
+          parts.push(`  - \`${slot.name}\`: "${content}"`);
+        }
+      }
+      parts.push('');
+    }
+  }
+
+  // Relationships
+  if (data.metadata.relationships.length > 0) {
+    parts.push('## Spatial Relationships');
+    parts.push('');
+    for (const rel of data.metadata.relationships) {
+      parts.push(`- **${rel.from}** → *${rel.type}* → **${rel.to}**`);
+    }
+    parts.push('');
+  }
+
+  // Footer
+  parts.push('---');
+  parts.push(`*Exported from illustrate.md | ${data.document.width}×${data.document.height} canvas | ${data.metadata.layers.length} layer(s)*`);
+
+  return parts.join('\n');
 }
