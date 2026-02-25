@@ -27,7 +27,7 @@ export default function Home() {
         </div>
 
         {/* Canvas area — fills remaining space */}
-        <div className="flex-1 bg-muted/20 overflow-auto flex items-center justify-center">
+        <div className="flex-1 bg-muted/20 overflow-hidden">
           <Canvas />
         </div>
 
