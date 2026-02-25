@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useThemeStore } from '@/stores/theme-store';
 
 export interface LogoMarkProps {
   /** Size in pixels (square) */
@@ -12,7 +15,7 @@ export interface LogoMarkProps {
 /**
  * illustrate.md logomark (icon-only variant)
  * 
- * Uses favicon.svg for the bubble-letter mark.
+ * Theme-aware: switches between light/dark variants based on current mode.
  * Use Logo for full wordmark contexts.
  */
 export function LogoMark({
@@ -20,9 +23,14 @@ export function LogoMark({
   className = '',
   alt = 'illustrate.md',
 }: LogoMarkProps) {
+  const mode = useThemeStore((state) => state.mode);
+  
+  // Use dark logo (white) for dark mode, regular logo for light mode
+  const src = mode === 'dark' ? '/logo-dark.svg' : '/favicon.svg';
+
   return (
     <Image
-      src="/favicon.svg"
+      src={src}
       alt={alt}
       width={size}
       height={size}

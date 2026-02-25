@@ -1,12 +1,15 @@
+'use client';
+
 import Image from 'next/image';
+import { useThemeStore } from '@/stores/theme-store';
 
 export interface LogoProps {
   /** Width in pixels (height auto-scales) */
   width?: number;
   /** Height in pixels (width auto-scales) */
   height?: number;
-  /** Use dark variant for light backgrounds */
-  variant?: 'default' | 'dark' | 'light';
+  /** Override automatic theme detection */
+  variant?: 'auto' | 'dark' | 'light';
   /** Custom className */
   className?: string;
   /** Alt text for accessibility */
@@ -16,25 +19,32 @@ export interface LogoProps {
 /**
  * illustrate.md logo component
  * 
- * Renders the full logo with wordmark.
+ * Theme-aware: automatically switches between light/dark variants.
  * Use LogoMark for icon-only contexts (favicons, small UI).
  */
 export function Logo({
   width,
   height,
-  variant = 'default',
+  variant = 'auto',
   className = '',
   alt = 'illustrate.md',
 }: LogoProps) {
+  const mode = useThemeStore((state) => state.mode);
+  
   // Default to reasonable size if neither specified
   const finalWidth = width ?? (height ? undefined : 180);
   const finalHeight = height;
 
-  const src = variant === 'dark' 
-    ? '/logo-dark.svg'
-    : variant === 'light'
-    ? '/logo-light.svg'
-    : '/logo.svg';
+  // Determine which logo to use
+  let src: string;
+  if (variant === 'dark') {
+    src = '/logo-dark.svg';
+  } else if (variant === 'light') {
+    src = '/logo-light.svg';
+  } else {
+    // Auto: use dark logo (white) for dark mode
+    src = mode === 'dark' ? '/logo-dark.svg' : '/logo.svg';
+  }
 
   return (
     <Image
