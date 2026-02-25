@@ -16,7 +16,7 @@ export default function LandingPage() {
   }, [initialized, initialize]);
 
   return (
-    <div className="min-h-screen bg-background font-mono">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -54,28 +54,30 @@ export default function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="py-24 px-4">
-        <div className="max-w-4xl mx-auto">
-          <pre className="text-primary text-xs sm:text-sm mb-8 overflow-x-auto">{`
-    ┌─────────────────────────────────────────────────────────┐
-    │                                                         │
-    │      ASCII diagrams, beautifully simple                 │
-    │                                                         │
-    └─────────────────────────────────────────────────────────┘
+      <section className="py-16 px-4">
+        <div className="max-w-5xl mx-auto">
+          {/* ASCII Hero Art */}
+          <pre className="text-primary text-[10px] sm:text-xs leading-tight mb-12 text-center overflow-x-auto">{`
+    ██╗██╗     ██╗     ██╗   ██╗███████╗████████╗██████╗  █████╗ ████████╗███████╗
+    ██║██║     ██║     ██║   ██║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
+    ██║██║     ██║     ██║   ██║███████╗   ██║   ██████╔╝███████║   ██║   █████╗  
+    ██║██║     ██║     ██║   ██║╚════██║   ██║   ██╔══██╗██╔══██║   ██║   ██╔══╝  
+    ██║███████╗███████╗╚██████╔╝███████║   ██║   ██║  ██║██║  ██║   ██║   ███████╗
+    ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝
           `.trim()}</pre>
           
-          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-6 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-6 tracking-tight text-center">
             Draw diagrams with text.
             <br />
             <span className="text-muted-foreground">Share them anywhere.</span>
           </h1>
           
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl">
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto text-center">
             Create beautiful ASCII art diagrams, wireframes, and illustrations. 
             Perfect for documentation, README files, and anywhere you need text-based graphics.
           </p>
           
-          <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center justify-center gap-4 flex-wrap">
             <Link
               href={user ? "/editor" : "/signup"}
               className="px-6 py-3 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors font-medium"
@@ -92,37 +94,35 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ASCII Divider */}
-      <div className="max-w-6xl mx-auto px-4">
-        <pre className="text-muted-foreground/50 text-xs overflow-hidden">{'─'.repeat(120)}</pre>
+      {/* ASCII Divider - Centered */}
+      <div className="text-center">
+        <pre className="text-muted-foreground/30 text-xs inline-block">────────────────────────────────────────────────────────────────────────────────</pre>
       </div>
 
       {/* Demo Preview */}
       <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <pre className="text-foreground text-xs sm:text-sm leading-relaxed">{`
-┌─────────────────────────────────────────────────────────────────────────────┐
+        <div className="max-w-4xl mx-auto flex justify-center">
+          <pre className="text-foreground text-xs sm:text-sm leading-relaxed">{`┌─────────────────────────────────────────────────────────────────────────────┐
 │                                                                             │
-│     ┌──────────┐         ┌──────────┐         ┌──────────┐                 │
-│     │  Client  │────────▶│   API    │────────▶│ Database │                 │
-│     └──────────┘         └──────────┘         └──────────┘                 │
-│          │                    │                    │                        │
-│          │                    │                    │                        │
-│          ▼                    ▼                    ▼                        │
-│     ┌──────────┐         ┌──────────┐         ┌──────────┐                 │
-│     │    UI    │         │  Cache   │         │  Backup  │                 │
-│     └──────────┘         └──────────┘         └──────────┘                 │
+│       ┌──────────┐         ┌──────────┐         ┌──────────┐               │
+│       │  Client  │────────▶│   API    │────────▶│ Database │               │
+│       └──────────┘         └──────────┘         └──────────┘               │
+│            │                    │                    │                      │
+│            │                    │                    │                      │
+│            ▼                    ▼                    ▼                      │
+│       ┌──────────┐         ┌──────────┐         ┌──────────┐               │
+│       │    UI    │         │  Cache   │         │  Backup  │               │
+│       └──────────┘         └──────────┘         └──────────┘               │
 │                                                                             │
-│                    Create diagrams like this in minutes                     │
+│                      Create diagrams like this in minutes                   │
 │                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-          `.trim()}</pre>
+└─────────────────────────────────────────────────────────────────────────────┘`}</pre>
         </div>
       </section>
 
-      {/* ASCII Divider */}
-      <div className="max-w-6xl mx-auto px-4">
-        <pre className="text-muted-foreground/50 text-xs overflow-hidden">{'─'.repeat(120)}</pre>
+      {/* ASCII Divider - Centered */}
+      <div className="text-center">
+        <pre className="text-muted-foreground/30 text-xs inline-block">────────────────────────────────────────────────────────────────────────────────</pre>
       </div>
 
       {/* Features */}
@@ -131,7 +131,6 @@ export default function LandingPage() {
           <pre className="text-muted-foreground text-xs mb-12">{`/ FEATURES`}</pre>
           
           <div className="space-y-12">
-            {/* Feature 1 */}
             <div className="grid md:grid-cols-[auto_1fr] gap-6 items-start">
               <pre className="text-primary text-sm">■ 01</pre>
               <div>
@@ -143,7 +142,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 2 */}
             <div className="grid md:grid-cols-[auto_1fr] gap-6 items-start">
               <pre className="text-primary text-sm">■ 02</pre>
               <div>
@@ -155,7 +153,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 3 */}
             <div className="grid md:grid-cols-[auto_1fr] gap-6 items-start">
               <pre className="text-primary text-sm">■ 03</pre>
               <div>
@@ -167,7 +164,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 4 */}
             <div className="grid md:grid-cols-[auto_1fr] gap-6 items-start">
               <pre className="text-primary text-sm">■ 04</pre>
               <div>
@@ -179,7 +175,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 5 */}
             <div className="grid md:grid-cols-[auto_1fr] gap-6 items-start">
               <pre className="text-primary text-sm">■ 05</pre>
               <div>
@@ -191,7 +186,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 6 */}
             <div className="grid md:grid-cols-[auto_1fr] gap-6 items-start">
               <pre className="text-primary text-sm">■ 06</pre>
               <div>
@@ -206,87 +200,159 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ASCII Divider */}
-      <div className="max-w-6xl mx-auto px-4">
-        <pre className="text-muted-foreground/50 text-xs overflow-hidden">{'─'.repeat(120)}</pre>
+      {/* ASCII Divider - Centered */}
+      <div className="text-center">
+        <pre className="text-muted-foreground/30 text-xs inline-block">────────────────────────────────────────────────────────────────────────────────</pre>
       </div>
 
-      {/* Use Cases */}
+      {/* Use Cases - 3x3 Grid */}
       <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <pre className="text-muted-foreground text-xs mb-12">{`/ USE CASES`}</pre>
           
-          <div className="grid md:grid-cols-2 gap-8">
-            <pre className="text-foreground text-xs p-4 bg-muted/30 rounded-lg overflow-x-auto">{`
-┌─────────────────────────┐
-│     README diagrams     │
-├─────────────────────────┤
-│                         │
-│  ┌─────┐     ┌─────┐   │
-│  │ src │────▶│build│   │
-│  └─────┘     └─────┘   │
-│                         │
-└─────────────────────────┘
-            `.trim()}</pre>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* 1. README Diagrams */}
+            <div className="bg-muted/30 rounded-lg p-4 flex items-center justify-center">
+              <pre className="text-foreground text-[10px] leading-tight">{`┌───────────────────┐
+│  README diagram   │
+├───────────────────┤
+│  ┌────┐   ┌────┐  │
+│  │src │──▶│dist│  │
+│  └────┘   └────┘  │
+└───────────────────┘`}</pre>
+            </div>
 
-            <pre className="text-foreground text-xs p-4 bg-muted/30 rounded-lg overflow-x-auto">{`
-┌─────────────────────────┐
-│      Architecture       │
-├─────────────────────────┤
-│   ┌───┐ ┌───┐ ┌───┐    │
-│   │ A │─│ B │─│ C │    │
-│   └─┬─┘ └───┘ └─┬─┘    │
-│     └─────┬─────┘      │
-│         ┌─┴─┐          │
-│         │ D │          │
-│         └───┘          │
-└─────────────────────────┘
-            `.trim()}</pre>
+            {/* 2. Architecture */}
+            <div className="bg-muted/30 rounded-lg p-4 flex items-center justify-center">
+              <pre className="text-foreground text-[10px] leading-tight">{`┌───────────────────┐
+│   Architecture    │
+├───────────────────┤
+│  ┌─┐  ┌─┐  ┌─┐   │
+│  │A│──│B│──│C│   │
+│  └┬┘  └─┘  └┬┘   │
+│   └────┬────┘    │
+│       ┌┴┐        │
+│       │D│        │
+│       └─┘        │
+└───────────────────┘`}</pre>
+            </div>
 
-            <pre className="text-foreground text-xs p-4 bg-muted/30 rounded-lg overflow-x-auto">{`
-┌─────────────────────────┐
-│       Wireframes        │
-├─────────────────────────┤
-│ ┌─────────────────────┐ │
-│ │ ▓▓▓ Header ▓▓▓▓▓▓▓▓ │ │
-│ ├──────┬──────────────┤ │
-│ │ Nav  │   Content    │ │
-│ │      │              │ │
-│ └──────┴──────────────┘ │
-└─────────────────────────┘
-            `.trim()}</pre>
+            {/* 3. Wireframes */}
+            <div className="bg-muted/30 rounded-lg p-4 flex items-center justify-center">
+              <pre className="text-foreground text-[10px] leading-tight">{`┌───────────────────┐
+│    Wireframes     │
+├───────────────────┤
+│ ┌───────────────┐ │
+│ │▓▓▓ Header ▓▓▓▓│ │
+│ ├────┬──────────┤ │
+│ │Nav │ Content  │ │
+│ │    │          │ │
+│ └────┴──────────┘ │
+└───────────────────┘`}</pre>
+            </div>
 
-            <pre className="text-foreground text-xs p-4 bg-muted/30 rounded-lg overflow-x-auto">{`
-┌─────────────────────────┐
-│      Flowcharts         │
-├─────────────────────────┤
-│        ┌─────┐          │
-│        │Start│          │
-│        └──┬──┘          │
-│      ┌────▼────┐        │
-│      │ Choice? │        │
-│      └────┬────┘        │
-│     Yes   │   No        │
-│    ┌──────┴──────┐      │
-└─────────────────────────┘
-            `.trim()}</pre>
+            {/* 4. Flowcharts */}
+            <div className="bg-muted/30 rounded-lg p-4 flex items-center justify-center">
+              <pre className="text-foreground text-[10px] leading-tight">{`┌───────────────────┐
+│    Flowcharts     │
+├───────────────────┤
+│      ┌─────┐      │
+│      │Start│      │
+│      └──┬──┘      │
+│    ┌────▼────┐    │
+│    │ Choice? │    │
+│    └────┬────┘    │
+│   Yes   │   No    │
+└───────────────────┘`}</pre>
+            </div>
+
+            {/* 5. Sequence Diagrams */}
+            <div className="bg-muted/30 rounded-lg p-4 flex items-center justify-center">
+              <pre className="text-foreground text-[10px] leading-tight">{`┌───────────────────┐
+│ Sequence Diagram  │
+├───────────────────┤
+│  User      Server │
+│   │          │    │
+│   │──request─▶    │
+│   │          │    │
+│   │◀─response─    │
+│   │          │    │
+└───────────────────┘`}</pre>
+            </div>
+
+            {/* 6. State Machines */}
+            <div className="bg-muted/30 rounded-lg p-4 flex items-center justify-center">
+              <pre className="text-foreground text-[10px] leading-tight">{`┌───────────────────┐
+│  State Machine    │
+├───────────────────┤
+│                   │
+│  ┌────┐   ┌────┐  │
+│  │Idle│──▶│Run │  │
+│  └────┘   └─┬──┘  │
+│     ▲       │     │
+│     └───────┘     │
+│                   │
+└───────────────────┘`}</pre>
+            </div>
+
+            {/* 7. Network Topology */}
+            <div className="bg-muted/30 rounded-lg p-4 flex items-center justify-center">
+              <pre className="text-foreground text-[10px] leading-tight">{`┌───────────────────┐
+│ Network Topology  │
+├───────────────────┤
+│      ┌───┐        │
+│      │ R │        │
+│     /└───┘\       │
+│   ┌─┐     ┌─┐     │
+│   │A│     │B│     │
+│   └─┘     └─┘     │
+└───────────────────┘`}</pre>
+            </div>
+
+            {/* 8. ER Diagrams */}
+            <div className="bg-muted/30 rounded-lg p-4 flex items-center justify-center">
+              <pre className="text-foreground text-[10px] leading-tight">{`┌───────────────────┐
+│   ER Diagram      │
+├───────────────────┤
+│ ┌────┐    ┌────┐  │
+│ │User│───<│Post│  │
+│ └────┘    └────┘  │
+│   │               │
+│   └──<┌─────┐     │
+│       │Role │     │
+│       └─────┘     │
+└───────────────────┘`}</pre>
+            </div>
+
+            {/* 9. ASCII Art */}
+            <div className="bg-muted/30 rounded-lg p-4 flex items-center justify-center">
+              <pre className="text-foreground text-[10px] leading-tight">{`┌───────────────────┐
+│    ASCII Art      │
+├───────────────────┤
+│                   │
+│    ╔═══════╗      │
+│    ║ ◉   ◉ ║      │
+│    ║   ▽   ║      │
+│    ║ ╰───╯ ║      │
+│    ╚═══════╝      │
+│                   │
+└───────────────────┘`}</pre>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ASCII Divider */}
-      <div className="max-w-6xl mx-auto px-4">
-        <pre className="text-muted-foreground/50 text-xs overflow-hidden">{'─'.repeat(120)}</pre>
+      {/* ASCII Divider - Centered */}
+      <div className="text-center">
+        <pre className="text-muted-foreground/30 text-xs inline-block">────────────────────────────────────────────────────────────────────────────────</pre>
       </div>
 
       {/* CTA */}
       <section className="py-20 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <pre className="text-primary text-xs mb-8 inline-block">{`
-┌─────────────────────────────────┐
+          <pre className="text-primary text-xs mb-8 inline-block">{`┌─────────────────────────────────┐
 │   Ready to start drawing?       │
-└─────────────────────────────────┘
-          `.trim()}</pre>
+└─────────────────────────────────┘`}</pre>
           
           <p className="text-muted-foreground mb-8">
             Create your first ASCII diagram in seconds. No credit card required.
@@ -304,7 +370,9 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-border py-8 px-4">
         <div className="max-w-6xl mx-auto">
-          <pre className="text-muted-foreground/50 text-xs mb-6">{`─────────────────────────────────────────────────────────────────────────────────`}</pre>
+          <div className="text-center mb-6">
+            <pre className="text-muted-foreground/30 text-xs inline-block">────────────────────────────────────────────────────────────────────────────────</pre>
+          </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <p>© 2026 illustrate.md</p>
             <div className="flex items-center gap-6">
