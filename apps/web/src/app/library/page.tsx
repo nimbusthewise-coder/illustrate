@@ -15,11 +15,11 @@ export default function LibraryPage() {
               className="text-muted-foreground hover:text-foreground text-sm transition-colors"
             >
               ← Back to Canvas
-            </a>
             <div className="flex items-center gap-2">
               <LogoMark size={32} />
               <h1 className="text-3xl font-bold"></h1>
             </div>
+            </a>
           </div>
           <ThemeSelector />
         </header>
