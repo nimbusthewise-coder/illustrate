@@ -557,12 +557,43 @@ export function Canvas() {
           setDragOffset({ row: row - clickedInstance.y, col: col - clickedInstance.x });
           setSelectionStart(null);
           setSelectionEnd(null);
-          setIsDrawing(false);
+          setIsDraggingSelection(false);
+        } else if (selectionStart && selectionEnd) {
+          // Check if clicking inside existing selection
+          const minRow = Math.min(selectionStart.row, selectionEnd.row);
+          const maxRow = Math.max(selectionStart.row, selectionEnd.row);
+          const minCol = Math.min(selectionStart.col, selectionEnd.col);
+          const maxCol = Math.max(selectionStart.col, selectionEnd.col);
+          
+          if (row >= minRow && row <= maxRow && col >= minCol && col <= maxCol) {
+            // Start dragging the selection
+            setIsDraggingSelection(true);
+            setSelectionDragOffset({ row: row - minRow, col: col - minCol });
+            setSelectionOriginalBounds({ minRow, minCol, maxRow, maxCol });
+            
+            // Capture the content being moved
+            const chars = getSelectedChars(layers);
+            const content: Array<{ row: number; col: number; char: string }> = [];
+            for (let r = 0; r < chars.length; r++) {
+              for (let c = 0; c < chars[r].length; c++) {
+                const char = chars[r][c];
+                if (char && char !== ' ') {
+                  content.push({ row: r, col: c, char });
+                }
+              }
+            }
+            setSelectionContent(content);
+          } else {
+            // Clicking outside selection - clear it
+            setSelectionStart(null);
+            setSelectionEnd(null);
+            setGlobalSelection(null);
+            setIsDraggingSelection(false);
+          }
         } else {
-          // If there's a selection and clicking inside it, prepare to move
-          // Otherwise deselect
           selectInstance(null);
           setDraggingInstanceId(null);
+          setIsDraggingSelection(false);
         }
         break;
       }
@@ -625,6 +656,19 @@ export function Canvas() {
       const newX = col - dragOffset.col;
       const newY = row - dragOffset.row;
       moveInstance(draggingInstanceId, newX, newY);
+      return;
+    }
+    
+    // Handle selection dragging (move tool)
+    if (isDraggingSelection && selectionOriginalBounds) {
+      const newMinRow = row - selectionDragOffset.row;
+      const newMinCol = col - selectionDragOffset.col;
+      const height = selectionOriginalBounds.maxRow - selectionOriginalBounds.minRow;
+      const width = selectionOriginalBounds.maxCol - selectionOriginalBounds.minCol;
+      
+      // Update selection bounds to show new position
+      setSelectionStart({ row: newMinRow, col: newMinCol });
+      setSelectionEnd({ row: newMinRow + height, col: newMinCol + width });
       return;
     }
 
