@@ -481,12 +481,76 @@ export function Canvas() {
 
       case 'ellipse': {
         if (!drawStart) return;
-        // Ellipse not implemented in core - use simple circle approximation
-        // For now, just draw a box outline as placeholder
-        const start = { row: drawStart.row, col: drawStart.col };
-        const end = { row, col };
-        const boxPoints = getBoxPoints(start, end, 'outline');
-        setDrawPreview(boxPoints.map(p => ({ row: p.row, col: p.col, char: '○' })));
+        // Midpoint ellipse algorithm
+        const x0 = Math.min(drawStart.col, col);
+        const y0 = Math.min(drawStart.row, row);
+        const x1 = Math.max(drawStart.col, col);
+        const y1 = Math.max(drawStart.row, row);
+        
+        const cx = (x0 + x1) / 2;
+        const cy = (y0 + y1) / 2;
+        const rx = (x1 - x0) / 2;
+        const ry = (y1 - y0) / 2;
+        
+        if (rx < 1 || ry < 1) {
+          setDrawPreview([{ row: Math.round(cy), col: Math.round(cx), char: '○' }]);
+          break;
+        }
+        
+        const ellipsePoints = new Set<string>();
+        
+        // Plot 4 symmetric points
+        const plotEllipse = (ex: number, ey: number) => {
+          const points = [
+            { col: Math.round(cx + ex), row: Math.round(cy + ey) },
+            { col: Math.round(cx - ex), row: Math.round(cy + ey) },
+            { col: Math.round(cx + ex), row: Math.round(cy - ey) },
+            { col: Math.round(cx - ex), row: Math.round(cy - ey) },
+          ];
+          for (const p of points) {
+            if (p.col >= 0 && p.row >= 0 && p.col < width && p.row < height) {
+              ellipsePoints.add(`${p.row}-${p.col}`);
+            }
+          }
+        };
+        
+        // Midpoint ellipse algorithm
+        let x = 0;
+        let y = ry;
+        let rx2 = rx * rx;
+        let ry2 = ry * ry;
+        let p1 = ry2 - rx2 * ry + 0.25 * rx2;
+        
+        // Region 1
+        while (ry2 * x < rx2 * y) {
+          plotEllipse(x, y);
+          x++;
+          if (p1 < 0) {
+            p1 += 2 * ry2 * x + ry2;
+          } else {
+            y--;
+            p1 += 2 * ry2 * x - 2 * rx2 * y + ry2;
+          }
+        }
+        
+        // Region 2
+        let p2 = ry2 * (x + 0.5) * (x + 0.5) + rx2 * (y - 1) * (y - 1) - rx2 * ry2;
+        while (y >= 0) {
+          plotEllipse(x, y);
+          y--;
+          if (p2 > 0) {
+            p2 -= 2 * rx2 * y + rx2;
+          } else {
+            x++;
+            p2 += 2 * ry2 * x - 2 * rx2 * y + rx2;
+          }
+        }
+        
+        const preview = Array.from(ellipsePoints).map(key => {
+          const [r, c] = key.split('-').map(Number);
+          return { row: r, col: c, char: '○' };
+        });
+        setDrawPreview(preview);
         break;
       }
 
