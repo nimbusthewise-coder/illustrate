@@ -79,10 +79,17 @@ export interface LayerState {
     layerId: string,
     cells: Array<{ row: number; col: number; char: string }>
   ) => void;
+  /** Set cells with undo tracking — use for user operations */
+  setCellsWithUndo: (
+    layerId: string,
+    cells: Array<{ row: number; col: number; char: string }>
+  ) => void;
 
   // Undo/redo
   undo: () => void;
   redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
   pushOperation: (delta: OperationDelta) => void;
 
   // Export
@@ -270,7 +277,47 @@ export const useLayerStore = create<LayerState>()((set, get) => {
       }));
     },
 
+    setCellsWithUndo: (
+      layerId: string,
+      cells: Array<{ row: number; col: number; char: string }>
+    ) => {
+      // Prevent editing locked layers
+      if (get().isLayerLocked(layerId)) {
+        console.warn(`Cannot edit locked layer: ${layerId}`);
+        return;
+      }
+
+      const layer = get().layers.find((l) => l.id === layerId);
+      if (!layer) return;
+
+      const { buffer } = layer;
+      const cellDeltas: Array<{ row: number; col: number; before: string; after: string }> = [];
+
+      // Capture before state and build deltas
+      for (const { row, col, char } of cells) {
+        const idx = row * buffer.width + col;
+        if (idx >= 0 && idx < buffer.chars.length) {
+          const before = buffer.chars[idx];
+          if (before !== char) {
+            cellDeltas.push({ row, col, before, after: char });
+          }
+        }
+      }
+
+      // Only proceed if there are actual changes
+      if (cellDeltas.length === 0) return;
+
+      // Apply the changes
+      get().setCells(layerId, cells);
+
+      // Push to undo stack
+      get().pushOperation({ layerId, cells: cellDeltas });
+    },
+
     // Undo/redo
+    canUndo: () => get().undoStack.length > 0,
+    canRedo: () => get().redoStack.length > 0,
+
     undo: () => {
       const state = get();
       const delta = state.undoStack[state.undoStack.length - 1];
