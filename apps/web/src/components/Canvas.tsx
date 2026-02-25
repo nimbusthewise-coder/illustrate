@@ -642,7 +642,7 @@ export function Canvas() {
       default:
         break;
     }
-  }, [effectiveTool, activeLayerId, instances, getComponent, selectInstance, setCell, applyFill, isLayerLocked, getCellFromEvent]);
+  }, [effectiveTool, activeLayerId, instances, getComponent, selectInstance, setCell, applyFill, isLayerLocked, getCellFromEvent, selectionStart, selectionEnd, getSelectedChars, layers, setGlobalSelection]);
 
   // Handle mouse move — continue drawing or update preview
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
@@ -873,7 +873,7 @@ export function Canvas() {
       default:
         break;
     }
-  }, [isDrawing, effectiveTool, drawStart, activeLayerId, setCell, getCellFromEvent, draggingInstanceId, dragOffset, moveInstance]);
+  }, [isDrawing, effectiveTool, drawStart, activeLayerId, setCell, getCellFromEvent, draggingInstanceId, dragOffset, moveInstance, isDraggingSelection, selectionOriginalBounds, selectionDragOffset]);
 
   // Handle mouse up — commit shape drawing
   const handleMouseUp = useCallback(() => {
