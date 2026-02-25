@@ -10,13 +10,18 @@ import { GridDimensionsConfig } from '@/components/GridDimensionsConfig';
 import { ToolSelector } from '@/components/ToolSelector';
 import { UserMenu } from '@/components/UserMenu';
 
-export default function Home() {
+export default function EditorPage() {
   return (
     <main className="relative h-screen bg-background text-foreground flex flex-col overflow-hidden">
       {/* Header */}
       <header className="flex justify-between items-center px-4 py-3 border-b border-border flex-shrink-0">
-        <h1 className="text-xl font-bold">illustrate.md</h1>
-        <ThemeSelector />
+        <Link href="/" className="text-xl font-bold hover:text-primary transition-colors">
+          illustrate.md
+        </Link>
+        <div className="flex items-center gap-4">
+          <ThemeSelector />
+          <UserMenu />
+        </div>
       </header>
 
       {/* Main content area */}
