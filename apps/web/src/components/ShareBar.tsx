@@ -79,29 +79,39 @@ export function ShareBar() {
 
   // Get ASCII text from current canvas
   const getAsciiText = useCallback(() => {
-    // Composite all visible layers
-    const composited: string[][] = Array.from({ length: height }, () => 
-      Array(width).fill(' ')
-    );
+    // Composite all visible layers (buffer is flat array: index = row * width + col)
+    const composited: string[] = new Array(width * height).fill(' ');
     
     for (const layer of layers) {
       if (!layer.visible) continue;
-      const chars = layer.buffer.chars;
-      for (let row = 0; row < Math.min(chars.length, height); row++) {
-        for (let col = 0; col < Math.min(chars[row]?.length ?? 0, width); col++) {
-          const char = chars[row][col];
+      const { chars, width: bufWidth, height: bufHeight } = layer.buffer;
+      
+      for (let row = 0; row < Math.min(bufHeight, height); row++) {
+        for (let col = 0; col < Math.min(bufWidth, width); col++) {
+          const srcIdx = row * bufWidth + col;
+          const dstIdx = row * width + col;
+          const char = chars[srcIdx];
           if (char && char !== ' ') {
-            composited[row][col] = char;
+            composited[dstIdx] = char;
           }
         }
       }
     }
     
-    // Convert to string, trimming trailing whitespace per line
-    return composited
-      .map(row => row.join('').trimEnd())
-      .join('\n')
-      .trimEnd();
+    // Convert flat array to lines
+    const lines: string[] = [];
+    for (let row = 0; row < height; row++) {
+      const start = row * width;
+      const line = composited.slice(start, start + width).join('').trimEnd();
+      lines.push(line);
+    }
+    
+    // Trim trailing empty lines and return
+    while (lines.length > 0 && lines[lines.length - 1] === '') {
+      lines.pop();
+    }
+    
+    return lines.join('\n');
   }, [layers, width, height]);
 
   const handleCopyLink = () => copyWithFeedback(shareUrl, setLinkState);
