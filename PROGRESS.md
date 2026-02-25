@@ -24,7 +24,9 @@
 
 | ID | Area | Severity | Issue | Status |
 |----|------|----------|-------|--------|
-| R001 | Canvas | 🔴 Critical | Drawing tools not wired up — Canvas.tsx returns early with TODO on line 198 for non-select tools | Open |
+| R001 | Canvas | 🔴 Critical | Drawing tools not wired up — Canvas.tsx returns early with TODO on line 198 for non-select tools | ✅ Fixed |
+| R009 | Pen Tool | 🟡 Medium | Pen/eraser skips cells on fast mouse drag — need interpolation | ✅ Fixed |
+| R010 | Box Tool | ⚪ Low | Overlapping boxes don't merge corners into ┼ intersections | Open |
 | R002 | ColorPicker | 🟡 Minor | Hydration mismatch — `hexInput` initialized empty, then set via useEffect. Also browser extension interference (`data-np-*` attrs) | Open |
 | R003 | Layers | ⚪ Untested | Layer functionality not yet verified | Open |
 | R004 | Components | ⚪ Untested | Component library drag-drop not yet verified | Open |
@@ -51,6 +53,10 @@
 - **14:00** — App loads, hydration warning in console (R002)
 - **14:01** — Tools render but drawing doesn't work (R001)
 - **14:05** — Root cause identified: Canvas.tsx TODO placeholder
+- **14:14** — R001 fixed, but grid not rendering layer buffer
+- **14:16** — Grid now reads from layer.buffer.chars — DRAWING WORKS! 🎉
+- **14:16** — New issues: R009 (pen gaps), R010 (box intersections)
+- **14:18** — R009 fixed with getLinePoints interpolation
 
 ---
 
