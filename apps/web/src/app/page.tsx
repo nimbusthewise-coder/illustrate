@@ -10,27 +10,31 @@ import { ToolSelector } from '@/components/ToolSelector';
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-background text-foreground p-8">
-      <div className="max-w-7xl mx-auto">
-        <header className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">illustrate.md</h1>
-          <ThemeSelector />
-        </header>
+    <main className="relative h-screen bg-background text-foreground flex flex-col overflow-hidden">
+      {/* Header */}
+      <header className="flex justify-between items-center px-4 py-3 border-b border-border flex-shrink-0">
+        <h1 className="text-xl font-bold">illustrate.md</h1>
+        <ThemeSelector />
+      </header>
 
-        <div className="flex gap-6">
-          {/* Left sidebar — Tools and colors */}
-          <div className="w-64 flex-shrink-0 space-y-4">
-            <ToolSelector />
-            <ColorPicker />
-            <GridDimensionsConfig />
-          </div>
+      {/* Main content area */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left sidebar — Tools and colors */}
+        <div className="w-56 flex-shrink-0 p-4 space-y-4 border-r border-border overflow-y-auto">
+          <ToolSelector />
+          <ColorPicker />
+          <GridDimensionsConfig />
+        </div>
 
-          {/* Canvas area */}
-          <div className="flex-1 bg-card border border-border rounded-lg p-6 min-h-[600px] flex items-center justify-center overflow-auto">
+        {/* Canvas area — fills remaining space */}
+        <div className="flex-1 bg-muted/30 overflow-auto flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-lg p-4 shadow-sm">
             <Canvas />
           </div>
+        </div>
 
-          {/* Right sidebar — Layers, Components, Properties */}
+        {/* Right sidebar — Layers, Components, Properties */}
+        <div className="w-72 flex-shrink-0 border-l border-border overflow-y-auto">
           <RightSidebar />
         </div>
       </div>
