@@ -90,10 +90,17 @@ export function Canvas() {
   const setGlobalSelection = useSelectionStore((s) => s.setSelection);
   const copySelection = useSelectionStore((s) => s.copySelection);
   const clipboard = useSelectionStore((s) => s.clipboard);
+  const getSelectedChars = useSelectionStore((s) => s.getSelectedChars);
   
   // Instance dragging state
   const [draggingInstanceId, setDraggingInstanceId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ row: number; col: number }>({ row: 0, col: 0 });
+  
+  // Selection dragging state (for move tool)
+  const [isDraggingSelection, setIsDraggingSelection] = useState(false);
+  const [selectionDragOffset, setSelectionDragOffset] = useState<{ row: number; col: number }>({ row: 0, col: 0 });
+  const [selectionContent, setSelectionContent] = useState<Array<{ row: number; col: number; char: string }>>([]);
+  const [selectionOriginalBounds, setSelectionOriginalBounds] = useState<{ minRow: number; minCol: number; maxRow: number; maxCol: number } | null>(null);
   
   // Layer mutations
   const setCell = useLayerStore((s) => s.setCell);
