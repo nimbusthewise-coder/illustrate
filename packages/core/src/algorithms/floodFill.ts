@@ -1,8 +1,7 @@
 /**
  * Flood Fill Algorithm — F010: Fill Tool
  * 
- * Stub implementation for build compatibility.
- * TODO: Implement actual flood fill algorithm.
+ * Standard 4-connected flood fill using a queue (BFS).
  */
 
 export interface FillPosition {
@@ -25,8 +24,9 @@ export function canFill(
     return false;
   }
   const idx = row * width + col;
+  const currentChar = chars[idx] || ' ';
   // Can fill if current cell is different from fill character
-  return chars[idx] !== fillCharacter;
+  return currentChar !== fillCharacter;
 }
 
 export interface FloodFillResult {
@@ -35,8 +35,8 @@ export interface FloodFillResult {
 }
 
 /**
- * Perform flood fill operation
- * Returns object with positions array
+ * Perform flood fill operation using BFS
+ * Returns all positions that should be filled
  */
 export function floodFill(
   chars: string[],
@@ -45,12 +45,43 @@ export function floodFill(
   startRow: number,
   startCol: number
 ): FloodFillResult {
-  // Stub: return just the start position
-  // TODO: Implement actual flood fill algorithm
   if (startRow < 0 || startRow >= height || startCol < 0 || startCol >= width) {
     return { positions: [], targetChar: '' };
   }
-  const idx = startRow * width + startCol;
-  const targetChar = chars[idx] || ' ';
-  return { positions: [{ row: startRow, col: startCol }], targetChar };
+  
+  const startIdx = startRow * width + startCol;
+  const targetChar = chars[startIdx] || ' ';
+  
+  // Track visited cells
+  const visited = new Set<string>();
+  const positions: FillPosition[] = [];
+  
+  // BFS queue
+  const queue: FillPosition[] = [{ row: startRow, col: startCol }];
+  
+  while (queue.length > 0) {
+    const { row, col } = queue.shift()!;
+    const key = `${row}-${col}`;
+    
+    // Skip if out of bounds or already visited
+    if (row < 0 || row >= height || col < 0 || col >= width) continue;
+    if (visited.has(key)) continue;
+    
+    // Check if this cell matches the target character
+    const idx = row * width + col;
+    const cellChar = chars[idx] || ' ';
+    if (cellChar !== targetChar) continue;
+    
+    // Mark as visited and add to result
+    visited.add(key);
+    positions.push({ row, col });
+    
+    // Add 4-connected neighbors to queue
+    queue.push({ row: row - 1, col });  // up
+    queue.push({ row: row + 1, col });  // down
+    queue.push({ row, col: col - 1 });  // left
+    queue.push({ row, col: col + 1 });  // right
+  }
+  
+  return { positions, targetChar };
 }
