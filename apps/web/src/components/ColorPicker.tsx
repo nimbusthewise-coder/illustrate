@@ -167,27 +167,17 @@ export function ColorPicker() {
         >
           Hex Color
         </label>
-        <div className="flex gap-2">
-          <input
-            id="hex-input"
-            type="text"
-            value={hexInput}
-            onChange={(e) => handleHexInputChange(e.target.value)}
-            onKeyDown={handleHexKeyDown}
-            onBlur={handleHexInputSubmit}
-            className="flex-1 px-3 py-2 text-sm font-mono bg-background border border-input rounded focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder="#000000"
-            maxLength={7}
-          />
-          <div
-            className="w-10 h-10 rounded border border-border flex-shrink-0"
-            style={{
-              backgroundColor: isValidHex(normalizeHex(hexInput))
-                ? normalizeHex(hexInput)
-                : activeColor,
-            }}
-          />
-        </div>
+        <input
+          id="hex-input"
+          type="text"
+          value={hexInput}
+          onChange={(e) => handleHexInputChange(e.target.value)}
+          onKeyDown={handleHexKeyDown}
+          onBlur={handleHexInputSubmit}
+          className="w-full px-3 py-2 text-sm font-mono bg-background border border-input rounded focus:outline-none focus:ring-2 focus:ring-ring"
+          placeholder="#000000"
+          maxLength={7}
+        />
         {hexError && (
           <div className="text-xs text-error mt-1">{hexError}</div>
         )}
@@ -196,14 +186,14 @@ export function ColorPicker() {
       {/* Preset Palette */}
       <div>
         <div className="text-xs text-muted-foreground mb-2">Preset Colors</div>
-        <div className="grid grid-cols-8 gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {PRESET_COLORS.map((color) => (
             <ColorSwatch
               key={color}
               color={color}
               onClick={() => handlePresetClick(color)}
               selected={activeColor === color}
-              size="md"
+              size="sm"
             />
           ))}
         </div>
