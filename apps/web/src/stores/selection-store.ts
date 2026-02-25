@@ -1,5 +1,5 @@
 /**
- * Selection Store — tracks canvas selection for component creation
+ * Selection Store — tracks canvas selection and clipboard for copy/paste
  */
 
 import { create } from 'zustand';
@@ -11,19 +11,48 @@ export interface SelectionBounds {
   endCol: number;
 }
 
+export interface ClipboardContent {
+  chars: string[][];  // 2D array of characters
+  width: number;
+  height: number;
+}
+
 export interface SelectionState {
   selection: SelectionBounds | null;
+  clipboard: ClipboardContent | null;
   setSelection: (selection: SelectionBounds | null) => void;
   clearSelection: () => void;
   getSelectedChars: (layers: Array<{ buffer: { chars: string[]; width: number; height: number }; visible: boolean }>) => string[][];
+  copySelection: (layers: Array<{ buffer: { chars: string[]; width: number; height: number }; visible: boolean }>) => boolean;
+  getClipboard: () => ClipboardContent | null;
+  hasClipboard: () => boolean;
 }
 
 export const useSelectionStore = create<SelectionState>()((set, get) => ({
   selection: null,
+  clipboard: null,
   
   setSelection: (selection) => set({ selection }),
   
   clearSelection: () => set({ selection: null }),
+  
+  copySelection: (layers) => {
+    const chars = get().getSelectedChars(layers);
+    if (chars.length === 0) return false;
+    
+    set({
+      clipboard: {
+        chars,
+        width: chars[0]?.length || 0,
+        height: chars.length,
+      },
+    });
+    return true;
+  },
+  
+  getClipboard: () => get().clipboard,
+  
+  hasClipboard: () => get().clipboard !== null,
   
   // Extract chars from selection across all visible layers
   getSelectedChars: (layers) => {

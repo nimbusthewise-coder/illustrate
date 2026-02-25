@@ -88,6 +88,8 @@ export function Canvas() {
   const [selectionStart, setSelectionStart] = useState<{ row: number; col: number } | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<{ row: number; col: number } | null>(null);
   const setGlobalSelection = useSelectionStore((s) => s.setSelection);
+  const copySelection = useSelectionStore((s) => s.copySelection);
+  const clipboard = useSelectionStore((s) => s.clipboard);
   
   // Instance dragging state
   const [draggingInstanceId, setDraggingInstanceId] = useState<string | null>(null);
