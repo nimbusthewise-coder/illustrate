@@ -5,7 +5,9 @@ import {
   useCanvasStore,
   GRID_MIN,
   GRID_MAX,
+  clampGridDimension,
 } from '@/stores/canvas-store';
+import { useLayerStore } from '@/stores/layer-store';
 
 /**
  * GridDimensionsConfig — lets the user set canvas width/height in characters.
@@ -20,16 +22,22 @@ export function GridDimensionsConfig() {
   const [draftWidth, setDraftWidth] = useState(String(width));
   const [draftHeight, setDraftHeight] = useState(String(height));
 
+  const resizeAllLayers = useLayerStore((s) => s.resizeAllLayers);
+
   const commit = useCallback(() => {
     const w = parseInt(draftWidth, 10);
     const h = parseInt(draftHeight, 10);
-    const newW = Number.isNaN(w) ? width : w;
-    const newH = Number.isNaN(h) ? height : h;
+    const newW = clampGridDimension(Number.isNaN(w) ? width : w);
+    const newH = clampGridDimension(Number.isNaN(h) ? height : h);
+    
+    // Resize layer buffers first, then update canvas dimensions
+    resizeAllLayers(newW, newH);
     setDimensions(newW, newH);
+    
     // Reflect the clamped values back into the draft fields
-    setDraftWidth(String(useCanvasStore.getState().width));
-    setDraftHeight(String(useCanvasStore.getState().height));
-  }, [draftWidth, draftHeight, width, height, setDimensions]);
+    setDraftWidth(String(newW));
+    setDraftHeight(String(newH));
+  }, [draftWidth, draftHeight, width, height, setDimensions, resizeAllLayers]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') commit();
