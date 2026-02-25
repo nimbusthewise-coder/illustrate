@@ -86,6 +86,7 @@ export interface ComponentDefinition {
   modified: number; // timestamp
   boundingBox: BoundingBox;
   elements: CanvasElement[]; // Elements with relative positioning
+  charGrid?: string[][]; // Simple char-based definition (alternative to elements)
   slots: ComponentSlot[];
   category?: string; // Optional category for organization
   tags?: string[]; // Optional tags for filtering
@@ -115,7 +116,8 @@ export interface ValidationResult {
 export interface CreateComponentOptions {
   name: string;
   description?: string;
-  elements: CanvasElement[];
+  elements?: CanvasElement[];
+  charGrid?: string[][]; // Simple char-based component
   slots?: ComponentSlot[];
   category?: string;
   tags?: string[];

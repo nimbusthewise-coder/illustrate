@@ -160,13 +160,32 @@ export function validateComponent(
 export function createComponentDefinition(
   options: CreateComponentOptions,
 ): ComponentDefinition {
-  const boundingBox = calculateBoundingBox(options.elements);
-  const normalizedElements = normalizeElementPositions(
-    options.elements,
-    boundingBox,
-  );
-
   const now = Date.now();
+
+  // If charGrid provided, use that (simpler char-based component)
+  if (options.charGrid && options.charGrid.length > 0) {
+    const height = options.charGrid.length;
+    const width = Math.max(...options.charGrid.map(row => row.length));
+    
+    return {
+      id: generateComponentId(),
+      name: options.name,
+      description: options.description || '',
+      created: now,
+      modified: now,
+      boundingBox: { x: 0, y: 0, width, height },
+      elements: [],
+      charGrid: options.charGrid,
+      slots: options.slots || [],
+      category: options.category,
+      tags: options.tags || [],
+    };
+  }
+
+  // Otherwise use elements-based definition
+  const elements = options.elements || [];
+  const boundingBox = calculateBoundingBox(elements);
+  const normalizedElements = normalizeElementPositions(elements, boundingBox);
 
   return {
     id: generateComponentId(),
