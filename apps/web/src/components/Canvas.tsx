@@ -1067,30 +1067,32 @@ export function Canvas() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col w-full h-full">
       {/* F003: Zoom Controls */}
-      <ZoomControls
-        zoomPercent={zoomPercent}
-        onZoomIn={zoomIn}
-        onZoomOut={zoomOut}
-        onResetZoom={resetZoom}
-      />
+      <div className="flex-shrink-0 p-2 bg-background/80 backdrop-blur-sm border-b border-border">
+        <ZoomControls
+          zoomPercent={zoomPercent}
+          onZoomIn={zoomIn}
+          onZoomOut={zoomOut}
+          onResetZoom={resetZoom}
+        />
+      </div>
 
       {/* F003: Zoomable canvas container with wheel event support */}
       <div
         ref={containerRef}
         data-testid="canvas-container"
-        className="inline-block overflow-auto"
+        className="flex-1 overflow-auto flex items-center justify-center p-4"
       >
         <div
           data-testid="canvas"
-          className={`inline-block border border-border ${
+          className={`inline-block ${
             dragOver ? 'ring-2 ring-primary/50' : ''
           }`}
           style={{
             backgroundColor: backgroundColor,
             color: foregroundColor,
-            transformOrigin: 'top left',
+            transformOrigin: 'center center',
             transform: `scale(${zoom})`,
           }}
           onDragOver={handleDragOver}
