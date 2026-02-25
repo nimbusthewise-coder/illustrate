@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDiagramStore } from '@/stores/diagram-store';
 import { useLayerStore } from '@/stores/layer-store';
 import { useCanvasStore } from '@/stores/canvas-store';
@@ -143,6 +143,23 @@ export function ShareBar() {
     setIsEditing(false);
     handleSave();
   };
+
+  // Cmd+S / Ctrl+S to save
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        if (diagramId === 'unsaved' && !isEditing) {
+          setIsEditing(true);
+        } else {
+          handleSave();
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [diagramId, isEditing, handleSave]);
 
   return (
     <div className="flex items-center gap-3 px-3 py-1.5 bg-muted/50 rounded-lg border border-border">
