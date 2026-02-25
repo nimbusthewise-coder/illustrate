@@ -20,7 +20,7 @@ export default function Home() {
       {/* Main content area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar — Tools and colors */}
-        <div className="w-56 flex-shrink-0 p-4 space-y-4 border-r border-border overflow-y-auto">
+        <div className="w-72 flex-shrink-0 p-4 space-y-4 border-r border-border overflow-y-auto">
           <ToolSelector />
           <ColorPicker />
           <GridDimensionsConfig />
@@ -34,7 +34,7 @@ export default function Home() {
         </div>
 
         {/* Right sidebar — Layers, Components, Properties */}
-        <div className="w-72 flex-shrink-0 border-l border-border overflow-y-auto">
+        <div className="w-80 flex-shrink-0 border-l border-border overflow-y-auto">
           <RightSidebar />
         </div>
       </div>
