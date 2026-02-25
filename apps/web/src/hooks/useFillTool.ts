@@ -7,7 +7,7 @@
 import { useCallback } from 'react';
 import { useLayerStore } from '@/stores/layer-store';
 import { useToolStore } from '@/stores/tool-store';
-import { floodFill, canFill } from '@illustrate/core/algorithms/floodFill';
+import { floodFill, canFill } from '@illustrate.md/core';
 import type { CellDelta, OperationDelta } from '@/lib/types';
 
 export function useFillTool() {

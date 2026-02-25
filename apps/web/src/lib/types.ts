@@ -58,7 +58,8 @@ export interface OperationDelta {
 /**
  * Tool types
  */
-export type ToolType = 'select' | 'box' | 'line' | 'text' | 'fill' | 'eraser' | 'pan';
+// Re-export ToolType from canonical source
+export type { ToolType } from '../types/tools';
 
 /**
  * Selection — rectangular region on canvas

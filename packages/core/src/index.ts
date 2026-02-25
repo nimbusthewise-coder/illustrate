@@ -23,3 +23,6 @@ export * from './utils/terminal-detector';
 export * from './utils/terminal-layout';
 export * from './utils/streaming-renderer';
 export * from './utils/zoom';
+
+// Algorithms
+export * from './algorithms/floodFill.js';

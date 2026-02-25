@@ -7,10 +7,13 @@
 export type ToolType = 
   | 'select'    // Selection/move tool
   | 'pen'       // Drawing/text tool
+  | 'text'      // Alias for pen (text entry)
   | 'line'      // Line drawing tool
   | 'rectangle' // Rectangle shape tool
+  | 'box'       // Alias for rectangle
   | 'ellipse'   // Ellipse/circle tool
   | 'arrow'     // Arrow/connector tool
+  | 'fill'      // Fill tool
   | 'eraser'    // Erase tool
   | 'pan';      // Pan/hand tool
 
@@ -87,5 +90,30 @@ export const TOOLS: Record<ToolType, Tool> = {
     icon: '✋', // Hand icon
     cursor: 'grab',
     shortcut: 'space',
+  },
+  // Aliases and additional tools
+  text: {
+    type: 'text',
+    name: 'Text',
+    description: 'Add text to canvas',
+    icon: 'T',
+    cursor: 'text',
+    shortcut: 't',
+  },
+  box: {
+    type: 'box',
+    name: 'Box',
+    description: 'Draw boxes',
+    icon: '▭',
+    cursor: 'crosshair',
+    shortcut: 'b',
+  },
+  fill: {
+    type: 'fill',
+    name: 'Fill',
+    description: 'Fill area with color',
+    icon: '🪣',
+    cursor: 'crosshair',
+    shortcut: 'f',
   },
 };

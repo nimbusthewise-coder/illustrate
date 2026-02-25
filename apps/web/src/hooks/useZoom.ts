@@ -38,7 +38,7 @@ export interface UseZoomReturn {
   /** Set zoom to specific value */
   setZoom: (zoom: number) => void;
   /** Ref to attach to zoomable container for wheel events */
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 /**
