@@ -1082,7 +1082,7 @@ export function Canvas() {
       <div
         ref={containerRef}
         data-testid="canvas-container"
-        className="flex-1 overflow-auto flex items-center justify-center p-4"
+        className="w-full h-full overflow-auto flex items-center justify-center p-4"
       >
         <div
           data-testid="canvas"
