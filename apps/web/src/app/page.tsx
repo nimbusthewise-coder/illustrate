@@ -27,10 +27,8 @@ export default function Home() {
         </div>
 
         {/* Canvas area — fills remaining space */}
-        <div className="flex-1 bg-muted/30 overflow-auto flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-lg p-4 shadow-sm">
-            <Canvas />
-          </div>
+        <div className="flex-1 bg-muted/20 overflow-auto flex items-center justify-center">
+          <Canvas />
         </div>
 
         {/* Right sidebar — Layers, Components, Properties */}
