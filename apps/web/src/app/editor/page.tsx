@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { RightSidebar } from '@/components/RightSidebar';
 import { ComponentCreationButton } from '@/components/ComponentCreationButton';
@@ -7,6 +8,7 @@ import { Canvas } from '@/components/Canvas';
 import { ColorPicker } from '@/components/ColorPicker';
 import { GridDimensionsConfig } from '@/components/GridDimensionsConfig';
 import { ToolSelector } from '@/components/ToolSelector';
+import { UserMenu } from '@/components/UserMenu';
 
 export default function Home() {
   return (
