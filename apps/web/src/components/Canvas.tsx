@@ -493,12 +493,20 @@ export function Canvas() {
 
   // Handle mouse move — continue drawing or update preview
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDrawing) return;
-
     const cell = getCellFromEvent(e);
     if (!cell) return;
 
     const { row, col } = cell;
+    
+    // Handle instance dragging (separate from drawing)
+    if (draggingInstanceId) {
+      const newX = col - dragOffset.col;
+      const newY = row - dragOffset.row;
+      moveInstance(draggingInstanceId, newX, newY);
+      return;
+    }
+
+    if (!isDrawing) return;
 
     switch (effectiveTool) {
       case 'pen': {
@@ -703,6 +711,12 @@ export function Canvas() {
 
   // Handle mouse up — commit shape drawing
   const handleMouseUp = useCallback(() => {
+    // Stop instance dragging
+    if (draggingInstanceId) {
+      setDraggingInstanceId(null);
+      return;
+    }
+
     if (!isDrawing) return;
 
     // For select tool, keep the selection visible and sync to global store
