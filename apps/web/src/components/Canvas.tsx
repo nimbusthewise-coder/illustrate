@@ -44,6 +44,7 @@ export function Canvas() {
   const [dragOver, setDragOver] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawStart, setDrawStart] = useState<{ row: number; col: number } | null>(null);
+  const [lastCell, setLastCell] = useState<{ row: number; col: number } | null>(null);
   const [drawPreview, setDrawPreview] = useState<Array<{ row: number; col: number; char: string }>>([]);
   
   // Layer mutations
@@ -284,6 +285,7 @@ export function Canvas() {
         // Single character drawing
         setCell(activeLayerId, row, col, '█');
         setIsDrawing(true);
+        setLastCell({ row, col });
         break;
       }
 
@@ -291,6 +293,7 @@ export function Canvas() {
         // Erase character
         setCell(activeLayerId, row, col, ' ');
         setIsDrawing(true);
+        setLastCell({ row, col });
         break;
       }
 
@@ -329,12 +332,28 @@ export function Canvas() {
     switch (effectiveTool) {
       case 'pen':
       case 'text': {
-        setCell(activeLayerId, row, col, '█');
+        // Interpolate from last cell to fill gaps on fast drag
+        if (lastCell && (lastCell.row !== row || lastCell.col !== col)) {
+          const points = getLinePoints(lastCell, { row, col });
+          const cells = points.map(p => ({ row: p.row, col: p.col, char: '█' }));
+          setCells(activeLayerId, cells);
+        } else {
+          setCell(activeLayerId, row, col, '█');
+        }
+        setLastCell({ row, col });
         break;
       }
 
       case 'eraser': {
-        setCell(activeLayerId, row, col, ' ');
+        // Interpolate from last cell to fill gaps on fast drag
+        if (lastCell && (lastCell.row !== row || lastCell.col !== col)) {
+          const points = getLinePoints(lastCell, { row, col });
+          const cells = points.map(p => ({ row: p.row, col: p.col, char: ' ' }));
+          setCells(activeLayerId, cells);
+        } else {
+          setCell(activeLayerId, row, col, ' ');
+        }
+        setLastCell({ row, col });
         break;
       }
 
@@ -411,6 +430,7 @@ export function Canvas() {
 
     setIsDrawing(false);
     setDrawStart(null);
+    setLastCell(null);
     setDrawPreview([]);
   }, [isDrawing, drawPreview, activeLayerId, setCells]);
 
