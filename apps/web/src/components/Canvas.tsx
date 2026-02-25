@@ -571,14 +571,30 @@ export function Canvas() {
             setSelectionDragOffset({ row: row - minRow, col: col - minCol });
             setSelectionOriginalBounds({ minRow, minCol, maxRow, maxCol });
             
-            // Capture the content being moved
-            const chars = getSelectedChars(layers);
+            // Capture the content being moved directly from layers
             const content: Array<{ row: number; col: number; char: string }> = [];
-            for (let r = 0; r < chars.length; r++) {
-              for (let c = 0; c < chars[r].length; c++) {
-                const char = chars[r][c];
-                if (char && char !== ' ') {
-                  content.push({ row: r, col: c, char });
+            const height = maxRow - minRow + 1;
+            const width = maxCol - minCol + 1;
+            
+            // Composite visible layers within selection bounds
+            for (const layer of layers) {
+              if (!layer.visible || !layer.buffer) continue;
+              for (let r = 0; r < height; r++) {
+                for (let c = 0; c < width; c++) {
+                  const sourceRow = minRow + r;
+                  const sourceCol = minCol + c;
+                  const idx = sourceRow * layer.buffer.width + sourceCol;
+                  const char = layer.buffer.chars[idx];
+                  if (char && char !== ' ') {
+                    // Check if we already have content at this position
+                    const existingIdx = content.findIndex(item => item.row === r && item.col === c);
+                    if (existingIdx === -1) {
+                      content.push({ row: r, col: c, char });
+                    } else {
+                      // Layer compositing: upper layers override
+                      content[existingIdx].char = char;
+                    }
+                  }
                 }
               }
             }
