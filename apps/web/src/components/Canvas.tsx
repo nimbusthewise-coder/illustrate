@@ -75,7 +75,7 @@ export function Canvas() {
   const [dragOver, setDragOver] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawStart, setDrawStart] = useState<{ row: number; col: number } | null>(null);
-  const [lastCell, setLastCell] = useState<{ row: number; col: number } | null>(null);
+  const lastCellRef = useRef<{ row: number; col: number } | null>(null);
   const [drawPreview, setDrawPreview] = useState<Array<{ row: number; col: number; char: string }>>([]);
   
   // Layer mutations
@@ -316,7 +316,7 @@ export function Canvas() {
         // Single character drawing
         setCell(activeLayerId, row, col, '█');
         setIsDrawing(true);
-        setLastCell({ row, col });
+        lastCellRef.current = { row, col };
         break;
       }
 
@@ -324,7 +324,7 @@ export function Canvas() {
         // Erase character
         setCell(activeLayerId, row, col, ' ');
         setIsDrawing(true);
-        setLastCell({ row, col });
+        lastCellRef.current = { row, col };
         break;
       }
 
