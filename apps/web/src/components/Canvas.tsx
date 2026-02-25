@@ -323,12 +323,25 @@ export function Canvas() {
         break;
       }
 
-      case 'pen':
-      case 'text': {
+      case 'pen': {
         // Single character drawing
         setCell(activeLayerId, row, col, '█');
         setIsDrawing(true);
         lastCellRef.current = { row, col };
+        break;
+      }
+
+      case 'text': {
+        // Text tool: prompt for text and place it starting at click position
+        const text = window.prompt('Enter text:');
+        if (text) {
+          const cells = text.split('').map((char, i) => ({
+            row,
+            col: col + i,
+            char,
+          })).filter(c => c.col < width); // Stay in bounds
+          setCells(activeLayerId, cells);
+        }
         break;
       }
 
@@ -373,8 +386,7 @@ export function Canvas() {
     const { row, col } = cell;
 
     switch (effectiveTool) {
-      case 'pen':
-      case 'text': {
+      case 'pen': {
         // Interpolate from last cell using raw Bresenham (no angle snapping)
         const last = lastCellRef.current;
         if (last && (last.row !== row || last.col !== col)) {
@@ -385,6 +397,11 @@ export function Canvas() {
           setCell(activeLayerId, row, col, '█');
         }
         lastCellRef.current = { row, col };
+        break;
+      }
+
+      case 'text': {
+        // Text tool doesn't draw on drag
         break;
       }
 
