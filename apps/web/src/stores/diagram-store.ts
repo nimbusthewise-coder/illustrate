@@ -224,10 +224,15 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
       return { diagrams: newDiagrams };
     });
 
+    // Sync to cloud (fire and forget)
+    saveDiagramToCloud(item).catch(console.error);
+
     return item;
   },
 
   updateDiagram: (id, updates) => {
+    let updatedDiagram: DiagramItem | null = null;
+    
     set((state) => {
       const newDiagrams = state.diagrams.map((d) => {
         if (d.id !== id) return d;
@@ -247,11 +252,17 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
         if (updates.name !== undefined) {
           updated.name = updates.name.trim() || d.name;
         }
+        updatedDiagram = updated;
         return updated;
       });
       saveDiagramsToStorage(newDiagrams);
       return { diagrams: newDiagrams };
     });
+
+    // Sync to cloud (fire and forget)
+    if (updatedDiagram) {
+      saveDiagramToCloud(updatedDiagram).catch(console.error);
+    }
   },
 
   deleteDiagram: (id) => {
@@ -263,6 +274,9 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
         selectedDiagramId: state.selectedDiagramId === id ? null : state.selectedDiagramId,
       };
     });
+
+    // Sync deletion to cloud (fire and forget)
+    deleteDiagramFromCloud(id).catch(console.error);
   },
 
   duplicateDiagram: (id) => {
