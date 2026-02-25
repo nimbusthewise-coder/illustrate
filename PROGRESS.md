@@ -35,6 +35,14 @@
 | R014 | Layers | 🟡 Medium | Only active layer visible — grid wasn't compositing all layers | ✅ Fixed |
 | R015 | Box | 🟡 Medium | Preview not visible during drag — overlay CSS broken in grid | ✅ Fixed |
 | R016 | Line | 🟡 Medium | Line always used ─ instead of direction-appropriate chars | ✅ Fixed |
+| R017 | Line | 🟡 Medium | Line char based on input, not snapped output | ✅ Fixed |
+| R018 | Ellipse | 🟡 Medium | Ellipse was box placeholder | ✅ Fixed |
+| R019 | Arrow | 🟡 Medium | Arrow was all arrows, now line+head | ✅ Fixed |
+| R020 | Fill | 🟡 Medium | Flood fill was 1-cell stub | ✅ Fixed |
+| R021 | Text | 🟡 Medium | Text was popup, now cursor mode | ✅ Fixed |
+| R022 | Text | 🟡 Medium | Space key captured by pan shortcut | ✅ Fixed |
+| R023 | Select | ⚪ Enhancement | Select only works for component instances, not drawn content | Noted |
+| R024 | Text | ⚪ Enhancement | Text as movable element with bounding box reflow | Noted |
 | R004 | Components | ⚪ Untested | Component library drag-drop not yet verified | Open |
 | R005 | Export | ⚪ Untested | Markdown/SVG export not yet verified | Open |
 | R006 | Persistence | ⚪ Untested | Cloud save/load not yet verified | Open |
