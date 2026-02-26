@@ -7,12 +7,6 @@ const nextConfig: NextConfig = {
   // Transpile packages from the monorepo
   transpilePackages: ['@illustrate.md/core'],
   
-  // Disable output file tracing to avoid build issues in monorepo setup
-  outputFileTracingIncludes: {},
-  outputFileTracingExcludes: {
-    '*': ['**'],
-  },
-  
   // Configure webpack to handle Node.js modules
   webpack: (config, { isServer }) => {
     // Externalize Node.js-only modules for client bundle
