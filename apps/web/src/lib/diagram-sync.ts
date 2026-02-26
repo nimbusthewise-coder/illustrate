@@ -25,6 +25,7 @@ interface SupabaseDiagram {
   created_at: string;
   updated_at: string;
   last_opened_at: string | null;
+  is_public: boolean;
 }
 
 function supabaseToLocal(d: SupabaseDiagram): DiagramItem {
@@ -69,7 +70,34 @@ function localToSupabase(d: DiagramItem, userId: string): Omit<SupabaseDiagram, 
     cell_count: d.cellCount,
     layer_count: d.layerCount,
     last_opened_at: d.lastOpenedAt ? new Date(d.lastOpenedAt).toISOString() : null,
+    is_public: false, // Default to private
   };
+}
+
+/**
+ * Load a single diagram from cloud by ID.
+ * Works for:
+ * - User's own diagrams (when logged in)
+ * - Public diagrams (when is_public = true)
+ */
+export async function loadDiagramFromCloud(diagramId: string): Promise<DiagramItem | null> {
+  const supabase = createClient();
+  
+  // Try to fetch the diagram - RLS will allow if:
+  // 1. User owns it (auth.uid() = user_id)
+  // 2. It's public (is_public = true)
+  const { data, error } = await supabase
+    .from('diagrams')
+    .select('*')
+    .eq('id', diagramId)
+    .single();
+  
+  if (error || !data) {
+    // Diagram not found or not accessible
+    return null;
+  }
+  
+  return supabaseToLocal(data);
 }
 
 export async function fetchUserDiagrams(): Promise<DiagramItem[]> {

@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useDiagramStore } from '@/stores/diagram-store';
+import { useDiagramStore, type DiagramItem } from '@/stores/diagram-store';
 import { LogoMark } from '@/components/icons';
 import { ThemeSelector } from '@/components/ThemeSelector';
+import { loadDiagramFromCloud } from '@/lib/diagram-sync';
 
 export default function DiagramViewPage() {
   const params = useParams();
@@ -21,6 +22,7 @@ export default function DiagramViewPage() {
   const [diagramName, setDiagramName] = useState<string>('');
   const [notFound, setNotFound] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Load diagrams from storage first
@@ -31,49 +33,67 @@ export default function DiagramViewPage() {
   useEffect(() => {
     if (!loaded) return;
     
-    const diagram = getDiagram(id);
-    
-    if (!diagram) {
-      setNotFound(true);
-      return;
-    }
-    
-    setDiagramName(diagram.name);
-    
-    // Render ASCII from layers
-    const { width, height, layers } = diagram;
-    const composited: string[] = new Array(width * height).fill(' ');
-    
-    for (const layer of layers) {
-      if (!layer.visible) continue;
-      const { chars, width: bufWidth, height: bufHeight } = layer.buffer;
+    const loadAndRender = async () => {
+      setIsLoading(true);
       
-      for (let row = 0; row < Math.min(bufHeight, height); row++) {
-        for (let col = 0; col < Math.min(bufWidth, width); col++) {
-          const srcIdx = row * bufWidth + col;
-          const dstIdx = row * width + col;
-          const char = chars[srcIdx];
-          if (char && char !== ' ') {
-            composited[dstIdx] = char;
+      // Try localStorage first
+      let diagram: DiagramItem | null | undefined = getDiagram(id);
+      
+      // If not in localStorage, try Supabase
+      if (!diagram) {
+        try {
+          diagram = await loadDiagramFromCloud(id);
+        } catch (error) {
+          console.error('Failed to load diagram from cloud:', error);
+        }
+      }
+      
+      setIsLoading(false);
+      
+      if (!diagram) {
+        setNotFound(true);
+        return;
+      }
+      
+      setDiagramName(diagram.name);
+      
+      // Render ASCII from layers
+      const { width, height, layers } = diagram;
+      const composited: string[] = new Array(width * height).fill(' ');
+      
+      for (const layer of layers) {
+        if (!layer.visible) continue;
+        const { chars, width: bufWidth, height: bufHeight } = layer.buffer;
+        
+        for (let row = 0; row < Math.min(bufHeight, height); row++) {
+          for (let col = 0; col < Math.min(bufWidth, width); col++) {
+            const srcIdx = row * bufWidth + col;
+            const dstIdx = row * width + col;
+            const char = chars[srcIdx];
+            if (char && char !== ' ') {
+              composited[dstIdx] = char;
+            }
           }
         }
       }
-    }
+      
+      // Convert to lines
+      const lines: string[] = [];
+      for (let row = 0; row < height; row++) {
+        const start = row * width;
+        const line = composited.slice(start, start + width).join('').trimEnd();
+        lines.push(line);
+      }
+      
+      // Trim trailing empty lines
+      while (lines.length > 0 && lines[lines.length - 1] === '') {
+        lines.pop();
+      }
+      
+      setAscii(lines.join('\n'));
+    };
     
-    // Convert to lines
-    const lines: string[] = [];
-    for (let row = 0; row < height; row++) {
-      const start = row * width;
-      const line = composited.slice(start, start + width).join('').trimEnd();
-      lines.push(line);
-    }
-    
-    // Trim trailing empty lines
-    while (lines.length > 0 && lines[lines.length - 1] === '') {
-      lines.pop();
-    }
-    
-    setAscii(lines.join('\n'));
+    loadAndRender();
   }, [id, getDiagram, loaded]);
 
   const handleEdit = () => {
@@ -150,10 +170,12 @@ export default function DiagramViewPage() {
         
         {/* Diagram Display */}
         <div className="bg-muted/30 rounded-lg p-8 flex justify-center">
-          {ascii ? (
+          {isLoading ? (
+            <div className="text-muted-foreground">Loading diagram...</div>
+          ) : ascii ? (
             <pre className="text-foreground text-sm leading-relaxed">{ascii}</pre>
           ) : (
-            <div className="text-muted-foreground">Loading...</div>
+            <div className="text-muted-foreground">No content</div>
           )}
         </div>
         
