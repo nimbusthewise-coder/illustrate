@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuthStore } from '@/stores/auth-store';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { LogoMark } from '@/components/icons';
+import { AuthDebug } from '@/components/AuthDebug';
 
 export default function LandingPage() {
   const { user, initialize, initialized } = useAuthStore();
@@ -17,6 +18,8 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Temporary debug - remove after fixing auth */}
+      <AuthDebug />
       {/* Header */}
       <header className="">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
