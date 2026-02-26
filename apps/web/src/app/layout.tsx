@@ -4,7 +4,7 @@ import { ShortcutProvider } from '@/components/providers/ShortcutProvider';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
-  title: 'illustrate.md — ASCII diagrams, beautifully simple',
+  title: 'illustrate.md',
   description: 'Create beautiful ASCII art diagrams, wireframes, and illustrations. Perfect for documentation, README files, and anywhere you need text-based graphics.',
 };
 
