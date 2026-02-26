@@ -24,3 +24,5 @@ Built with Tinker 🔧
 <!-- v12 revert anon key -->
 
 <!-- v13 legacy jwt key -->
+
+<!-- v14 revert all auth changes -->
