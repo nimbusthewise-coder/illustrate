@@ -22,3 +22,5 @@ Built with Tinker 🔧
 <!-- v11 fix anon key -->
 
 <!-- v12 revert anon key -->
+
+<!-- v13 legacy jwt key -->
