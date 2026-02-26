@@ -20,3 +20,5 @@ Built with Tinker 🔧
 <!-- v10 rootDir+framework -->
 
 <!-- v11 fix anon key -->
+
+<!-- v12 revert anon key -->
