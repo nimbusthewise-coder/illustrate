@@ -16,3 +16,5 @@ Built with Tinker 🔧
 <!-- v8 with env vars -->
 
 <!-- v9 framework=nextjs -->
+
+<!-- v10 rootDir+framework -->
