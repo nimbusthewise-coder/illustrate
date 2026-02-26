@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useDiagramStore } from '@/stores/diagram-store';
 import { useLayerStore } from '@/stores/layer-store';
 import { useCanvasStore } from '@/stores/canvas-store';
+import { ShareModal } from './ShareModal';
 
 type CopyState = 'idle' | 'copied' | 'error';
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
@@ -50,6 +51,7 @@ export function ShareBar() {
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [diagramName, setDiagramName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // Get current diagram or generate placeholder ID
   const diagram = selectedDiagramId ? getDiagram(selectedDiagramId) : null;
@@ -253,6 +255,34 @@ export function ShareBar() {
           state={markdownState}
         />
       </div>
+
+      {/* Divider */}
+      <div className="w-px h-4 bg-border" />
+
+      {/* Share Button */}
+      <button
+        onClick={() => setIsShareModalOpen(true)}
+        disabled={diagramId === 'unsaved'}
+        className={`
+          px-3 py-1 text-xs font-medium rounded-full transition-colors
+          ${diagramId === 'unsaved'
+            ? 'bg-muted text-muted-foreground cursor-not-allowed'
+            : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+          }
+        `}
+        title={diagramId === 'unsaved' ? 'Save diagram first to share' : 'Share diagram'}
+      >
+        🔗 Share
+      </button>
+
+      {/* Share Modal */}
+      {diagramId !== 'unsaved' && (
+        <ShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          diagramId={diagramId}
+        />
+      )}
     </div>
   );
 }

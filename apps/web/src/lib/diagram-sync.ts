@@ -48,6 +48,7 @@ function supabaseToLocal(d: SupabaseDiagram): DiagramItem {
     createdAt: new Date(d.created_at).getTime(),
     updatedAt: new Date(d.updated_at).getTime(),
     lastOpenedAt: d.last_opened_at ? new Date(d.last_opened_at).getTime() : null,
+    isPublic: d.is_public ?? false,
   };
 }
 
@@ -70,7 +71,7 @@ function localToSupabase(d: DiagramItem, userId: string): Omit<SupabaseDiagram, 
     cell_count: d.cellCount,
     layer_count: d.layerCount,
     last_opened_at: d.lastOpenedAt ? new Date(d.lastOpenedAt).toISOString() : null,
-    is_public: false, // Default to private
+    is_public: d.isPublic ?? false,
   };
 }
 
@@ -154,6 +155,29 @@ export async function deleteDiagramFromCloud(diagramId: string): Promise<boolean
   
   if (error) {
     console.error('Failed to delete diagram:', error);
+    return false;
+  }
+  
+  return true;
+}
+
+/**
+ * Update the public visibility status of a diagram
+ */
+export async function setDiagramPublic(diagramId: string, isPublic: boolean): Promise<boolean> {
+  const supabase = createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+  
+  const { error } = await supabase
+    .from('diagrams')
+    .update({ is_public: isPublic, updated_at: new Date().toISOString() })
+    .eq('id', diagramId)
+    .eq('user_id', user.id);
+  
+  if (error) {
+    console.error('Failed to update diagram public status:', error);
     return false;
   }
   

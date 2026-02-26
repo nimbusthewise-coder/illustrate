@@ -42,6 +42,7 @@ export interface DiagramItem {
   createdAt: number;
   updatedAt: number;
   lastOpenedAt: number | null;
+  isPublic: boolean;
 }
 
 export type SortField = 'name' | 'createdAt' | 'updatedAt' | 'lastOpenedAt';
@@ -92,6 +93,9 @@ export interface DiagramState {
   // Favorites
   toggleFavorite: (id: string) => void;
 
+  // Public visibility
+  setIsPublic: (id: string, isPublic: boolean) => void;
+
   // Filters
   setFilter: (updates: Partial<DiagramFilters>) => void;
   resetFilters: () => void;
@@ -137,7 +141,12 @@ function loadDiagramsFromStorage(): DiagramItem[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    // Migrate: ensure isPublic exists (defaults to false for old diagrams)
+    return parsed.map((d: DiagramItem) => ({
+      ...d,
+      isPublic: d.isPublic ?? false,
+    }));
   } catch {
     return [];
   }
@@ -216,6 +225,7 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
       createdAt: now,
       updatedAt: now,
       lastOpenedAt: null,
+      isPublic: false,
     };
 
     set((state) => {
@@ -291,6 +301,7 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
       name: `${original.name} (Copy)`,
       parentId: original.id,
       isFavorite: false,
+      isPublic: false, // Copies start private
       version: 1,
       createdAt: now,
       updatedAt: now,
@@ -391,6 +402,16 @@ export const useDiagramStore = create<DiagramState>()((set, get) => ({
     set((state) => {
       const newDiagrams = state.diagrams.map((d) =>
         d.id === id ? { ...d, isFavorite: !d.isFavorite, updatedAt: Date.now() } : d
+      );
+      saveDiagramsToStorage(newDiagrams);
+      return { diagrams: newDiagrams };
+    });
+  },
+
+  setIsPublic: (id, isPublic) => {
+    set((state) => {
+      const newDiagrams = state.diagrams.map((d) =>
+        d.id === id ? { ...d, isPublic, updatedAt: Date.now() } : d
       );
       saveDiagramsToStorage(newDiagrams);
       return { diagrams: newDiagrams };
