@@ -12,3 +12,5 @@ Built with Tinker 🔧
 <!-- v6 -->
 
 <!-- v7 node20 -->
+
+<!-- v8 with env vars -->
