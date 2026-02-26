@@ -14,3 +14,5 @@ Built with Tinker 🔧
 <!-- v7 node20 -->
 
 <!-- v8 with env vars -->
+
+<!-- v9 framework=nextjs -->
