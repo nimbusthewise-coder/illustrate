@@ -35,7 +35,10 @@ export function DiagramLoader() {
     if (!loadId || loadedRef.current === loadId) return;
     
     const diagram = getDiagram(loadId);
-    if (!diagram) return;
+    if (!diagram) {
+      console.warn(`Diagram not found: ${loadId}`);
+      return;
+    }
     
     // Mark as loaded to prevent re-loading
     loadedRef.current = loadId;
@@ -43,16 +46,21 @@ export function DiagramLoader() {
     // Set canvas dimensions
     setDimensions(diagram.width, diagram.height);
     
-    // Replace layers: delete all existing, then add diagram layers
-    // We need to keep at least one layer, so add new ones first
+    // Capture current layer IDs before adding new ones
+    const originalLayerIds = layers?.map(l => l?.id).filter(Boolean) || [];
+    
+    // Add diagram layers first
     for (const layer of diagram.layers) {
-      addLayer(layer.name, { ...layer });
+      if (layer) {
+        addLayer(layer.name, { ...layer });
+      }
     }
     
-    // Delete original layers (the ones that existed before loading)
-    const originalLayerIds = layers.map(l => l.id);
+    // Delete original layers after adding new ones
     for (const id of originalLayerIds) {
-      deleteLayer(id);
+      if (id) {
+        deleteLayer(id);
+      }
     }
     
     // Select the diagram
