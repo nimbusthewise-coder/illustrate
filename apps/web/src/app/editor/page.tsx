@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { ThemeSelector } from '@/components/ThemeSelector';
+import { ModeToggle } from '@/components/ThemeSelector';
 import { RightSidebar } from '@/components/RightSidebar';
 import { ComponentCreationButton } from '@/components/ComponentCreationButton';
 import { Canvas } from '@/components/Canvas';
@@ -28,7 +28,7 @@ export default function EditorPage() {
         <ShareBar />
         
         <div className="flex items-center gap-3">
-          <ThemeSelector />
+          <ModeToggle />
           <UserMenu />
         </div>
       </header>
