@@ -18,3 +18,5 @@ Built with Tinker 🔧
 <!-- v9 framework=nextjs -->
 
 <!-- v10 rootDir+framework -->
+
+<!-- v11 fix anon key -->
